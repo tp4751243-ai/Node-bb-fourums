@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בית העורכים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #14213d;
+  --ink-soft: #2b3a5c;
+  --paper: #faf7f0;
+  --card: #ffffff;
+  --text: #1b1f2a;
+  --muted: #6b7280;
+  --line: #e7e1d3;
+  --accent: #b3261e;      /* printer's red */
+  --accent-soft: #fbe9e7;
+  --gold: #c8962e;
+  --gold-soft: #fbf3df;
+  --ok: #1f7a4d;
+  --ok-soft: #e3f4ea;
+  --shadow: 0 1px 2px rgba(20,33,61,.06), 0 8px 24px rgba(20,33,61,.06);
+  --radius: 14px;
+  --serif: "Frank Ruhl Libre", "David Libre", serif;
+  --sans: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+:root[data-theme="dark"] {
+  --ink: #e9e4d6; --ink-soft: #c9c2b0; --paper: #11151f; --card: #191f2c; --text: #e9e6df;
+  --muted: #9aa3b2; --line: #2a3242; --accent: #ef6b5f; --accent-soft: #3a1f1f;
+  --gold: #e0b45a; --gold-soft: #2e2716; --ok: #5cc48d; --ok-soft: #173126;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--paper); color: var(--text); line-height: 1.6; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--serif); color: var(--ink); line-height: 1.25; }
+
+/* ---------- Header ---------- */
+.topbar { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.topbar-inner { max-width: 1200px; margin: 0 auto; padding: 0 16px; height: 64px; display: flex; align-items: center; gap: 24px; }
+.brand { font-family: var(--serif); font-weight: 900; font-size: 1.5rem; color: var(--ink); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.brand-mark { width: 34px; height: 34px; border-radius: 8px; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-size: 1.1rem; }
+.brand em { font-style: normal; color: var(--accent); }
+.mainnav { display: flex; gap: 4px; }
+.mainnav a { padding: 8px 14px; border-radius: 999px; color: var(--muted); font-weight: 500; }
+.mainnav a:hover { color: var(--ink); background: var(--line); }
+.mainnav a.active { color: var(--paper); background: var(--ink); }
+.top-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 8px; }
+.search { display: flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; color: var(--muted); }
+.search input { border: 0; background: transparent; outline: none; font: inherit; color: var(--text); width: 160px; }
+.icon-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--text); display: grid; place-items: center; position: relative; }
+.icon-btn .dot { position: absolute; top: 6px; inset-inline-end: 7px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+.me { width: 38px; height: 38px; border-radius: 50%; background: var(--gold); color: #fff; display: grid; place-items: center; font-weight: 700; }
+
+/* ---------- Layout ---------- */
+.page { max-width: 1200px; margin: 0 auto; padding: 28px 16px 96px; }
+.view { display: none; animation: fade .25s ease; }
+.view.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 0 0 14px; flex-wrap: wrap; }
+.section-head h2 { font-size: 1.6rem; }
+.section-head p { color: var(--muted); font-size: .95rem; }
+.btn { border: 0; border-radius: 10px; padding: 10px 18px; font-weight: 700; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--text); }
+.btn-ghost:hover { background: var(--line); }
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: .78rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--line); color: var(--ink-soft); white-space: nowrap; }
+.pill.red { background: var(--accent-soft); color: var(--accent); }
+.pill.gold { background: var(--gold-soft); color: var(--gold); }
+.pill.green { background: var(--ok-soft); color: var(--ok); }
+
+/* ---------- Hero / worlds ---------- */
+.hero { background: var(--ink); color: var(--paper); border-radius: 22px; padding: 44px 40px; position: relative; overflow: hidden; margin-bottom: 28px; }
+:root[data-theme="dark"] .hero { background: #1d2535; }
+.hero::after { content: "א ב ג ד ה ו ז ח ט י כ ל מ נ ס ע פ צ ק ר ש ת"; position: absolute; inset-inline-start: -20px; bottom: -30px;
+  font-family: var(--serif); font-size: 7rem; font-weight: 900; opacity: .05; white-space: nowrap; pointer-events: none; }
+.hero h1 { color: var(--paper); font-size: clamp(2rem, 4.5vw, 3.2rem); font-weight: 900; }
+.hero h1 em { font-style: normal; color: var(--gold); }
+.hero p { color: #c5cbd8; font-size: 1.1rem; max-width: 560px; margin-top: 8px; }
+.hero-stats { display: flex; gap: 32px; margin-top: 24px; flex-wrap: wrap; }
+.hero-stats b { display: block; font-family: var(--serif); font-size: 1.8rem; color: var(--gold); }
+.hero-stats span { font-size: .85rem; color: #aab2c3; }
+.worlds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 32px; }
+.world { padding: 22px 20px; text-align: start; border: 1px solid var(--line); background: var(--card); border-radius: var(--radius);
+  transition: transform .2s, box-shadow .2s, border-color .2s; position: relative; overflow: hidden; color: var(--text); }
+.world:hover, .world.selected { transform: translateY(-4px); border-color: var(--accent); box-shadow: var(--shadow); }
+.world.selected { outline: 2px solid var(--accent); }
+.world .glyph { font-family: var(--serif); font-weight: 900; font-size: 2.6rem; color: var(--accent); line-height: 1; }
+.world h3 { font-size: 1.25rem; margin: 10px 0 4px; }
+.world p { font-size: .85rem; color: var(--muted); }
+.world .count { margin-top: 12px; font-size: .8rem; color: var(--ink-soft); font-weight: 700; }
+
+/* ---------- Topics ---------- */
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px; padding: 6px 14px; font-weight: 500; font-size: .9rem; }
+.tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.topic { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.topic:last-child { border-bottom: 0; }
+.topic:hover { background: color-mix(in srgb, var(--line) 35%, transparent); }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; font-size: .95rem; }
+.topic-title { font-weight: 700; font-size: 1.02rem; display: block; }
+.topic-title:hover { color: var(--accent); }
+.topic-meta { font-size: .82rem; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 2px; }
+.topic-stats { text-align: center; color: var(--muted); font-size: .8rem; min-width: 64px; }
+.topic-stats b { display: block; font-size: 1.1rem; color: var(--ink); }
+.solved { color: var(--ok); font-weight: 700; }
+
+/* ---------- Sidebar ---------- */
+.side .card { padding: 18px; margin-bottom: 18px; }
+.side h3 { font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.mini-list li { list-style: none; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: .9rem; }
+.mini-list li:last-child { border-bottom: 0; }
+.mini-list small { display: block; color: var(--muted); font-size: .78rem; }
+.contest-mini { background: linear-gradient(135deg, var(--gold-soft), var(--card)); border-color: color-mix(in srgb, var(--gold) 40%, var(--line)); }
+.countdown { display: flex; gap: 8px; margin: 10px 0 14px; }
+.countdown div { flex: 1; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 0; }
+.countdown b { display: block; font-family: var(--serif); font-size: 1.4rem; color: var(--ink); line-height: 1.1; }
+.countdown span { font-size: .7rem; color: var(--muted); }
+
+/* ---------- Contests ---------- */
+.contest-feature { display: grid; grid-template-columns: 1.2fr 1fr; overflow: hidden; margin-bottom: 28px; }
+.contest-art { background: var(--ink); color: var(--paper); padding: 32px; display: grid; place-items: center; min-height: 280px; position: relative; }
+:root[data-theme="dark"] .contest-art { background: #0b0f17; }
+.daf { width: 100%; max-width: 340px; aspect-ratio: 3/4; background: #fdfbf5; color: #1b1f2a; border-radius: 4px; padding: 18px; display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr; grid-template-rows: auto 1fr; gap: 8px; font-family: var(--serif); box-shadow: 0 20px 40px rgba(0,0,0,.35); }
+.daf .head { grid-column: 1 / -1; text-align: center; font-weight: 900; font-size: 1.1rem; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+.daf .col { background: repeating-linear-gradient(to bottom, #b9b2a2 0 2px, transparent 2px 7px); opacity: .7; border-radius: 2px; }
+.daf .col.main { background: repeating-linear-gradient(to bottom, #3a3a3a 0 3px, transparent 3px 9px); opacity: .85; }
+.contest-body { padding: 28px; display: flex; flex-direction: column; gap: 12px; }
+.contest-body h2 { font-size: 1.8rem; }
+.steps { display: flex; gap: 0; margin: 6px 0; }
+.step { flex: 1; text-align: center; font-size: .75rem; color: var(--muted); position: relative; padding-top: 18px; }
+.step::before { content: ""; position: absolute; top: 5px; inset-inline: 0; height: 3px; background: var(--line); }
+.step::after { content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 13px; height: 13px; border-radius: 50%; background: var(--line); }
+.step.done::before, .step.done::after, .step.now::after { background: var(--accent); }
+.step.now { color: var(--accent); font-weight: 700; }
+.prize-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.prize { flex: 1; min-width: 90px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; text-align: center; }
+.prize b { display: block; font-family: var(--serif); font-size: 1.2rem; color: var(--gold); }
+.prize span { font-size: .75rem; color: var(--muted); }
+.contest-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.contest-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.contest-card .thumb { height: 140px; display: grid; place-items: center; font-family: var(--serif); font-weight: 900; font-size: 3rem; color: #fff; }
+.contest-card .body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.contest-card .foot { display: flex; justify-content: space-between; align-items: center; font-size: .82rem; color: var(--muted); margin-top: auto; }
+.blind-note { display: flex; gap: 10px; align-items: flex-start; background: var(--gold-soft); border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+  border-radius: 12px; padding: 12px 14px; font-size: .88rem; margin: 18px 0 28px; }
+
+/* ---------- Jobs ---------- */
+.jobs-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; }
+.filters { padding: 18px; align-self: start; position: sticky; top: 84px; }
+.filters h4 { font-size: .85rem; color: var(--muted); margin: 14px 0 8px; font-weight: 700; }
+.filters h4:first-child { margin-top: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: transparent; color: var(--text); border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.seg { display: flex; background: var(--line); border-radius: 10px; padding: 3px; margin-bottom: 16px; width: fit-content; }
+.seg button { border: 0; background: transparent; padding: 7px 16px; border-radius: 8px; font-weight: 700; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+.job { padding: 18px 20px; margin-bottom: 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+.job h3 { font-family: var(--sans); font-size: 1.08rem; color: var(--text); }
+.job .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.job p { font-size: .9rem; color: var(--muted); }
+.job .side-col { text-align: end; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.job .pay { font-family: var(--serif); font-weight: 700; font-size: 1.15rem; color: var(--ink); white-space: nowrap; }
+.job.featured { border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); background: linear-gradient(180deg, var(--gold-soft), var(--card) 60%); }
+.empty { text-align: center; padding: 40px; color: var(--muted); }
+
+/* ---------- Toolbox ---------- */
+.tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.tool { padding: 20px; }
+.tool .ic { font-size: 1.8rem; }
+.tool h3 { font-size: 1.15rem; margin: 6px 0 4px; }
+.tool p { font-size: .88rem; color: var(--muted); }
+.font-tester { padding: 22px; margin-top: 24px; }
+.font-tester textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 12px; font: inherit; background: var(--paper); color: var(--text); resize: vertical; }
+.font-samples { display: grid; gap: 10px; margin-top: 14px; }
+.font-samples div { border-bottom: 1px dashed var(--line); padding-bottom: 8px; }
+.font-samples small { color: var(--muted); font-family: var(--sans); font-size: .75rem; }
+.font-samples p { font-size: 1.6rem; color: var(--ink); line-height: 1.5; }
+
+/* ---------- Modal ---------- */
+dialog { border: 0; border-radius: 18px; padding: 0; width: min(560px, calc(100% - 32px)); background: var(--card); color: var(--text); box-shadow: 0 30px 80px rgba(0,0,0,.35); margin: auto; }
+dialog::backdrop { background: rgba(10,14,24,.55); backdrop-filter: blur(3px); }
+.modal-head { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.modal-body { padding: 18px 22px; display: grid; gap: 12px; }
+.modal-foot { padding: 14px 22px; border-top: 1px solid var(--line); display: flex; gap: 8px; justify-content: flex-end; }
+label { font-size: .85rem; font-weight: 700; display: grid; gap: 4px; }
+input, select, textarea { font: inherit; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; background: var(--paper); color: var(--text); }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--paper);
+  padding: 10px 18px; border-radius: 10px; opacity: 0; transition: .25s; pointer-events: none; z-index: 200; }
+.toast.show { opacity: 1; transform: translateX(-50%); }
+
+/* ---------- Mobile tab bar ---------- */
+.tabbar { display: none; }
+@media (max-width: 980px) {
+  .grid-2, .jobs-layout, .contest-feature { grid-template-columns: 1fr; }
+  .worlds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contest-grid, .tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters { position: static; }
+  .search { display: none; }
+}
+@media (max-width: 680px) {
+  .mainnav { display: none; }
+  .hero { padding: 30px 22px; }
+  .contest-grid, .tools { grid-template-columns: 1fr; }
+  .topic { grid-template-columns: 38px minmax(0, 1fr); }
+  .topic .avatar { width: 38px; height: 38px; }
+  .topic-stats { display: none; }
+  .job { grid-template-columns: 1fr; }
+  .job .side-col { flex-direction: row; justify-content: space-between; align-items: center; }
+  .row-2 { grid-template-columns: 1fr; }
+  .tabbar { display: flex; position: fixed; bottom: 0; inset-inline: 0; background: var(--card); border-top: 1px solid var(--line); z-index: 60; padding-bottom: env(safe-area-inset-bottom); }
+  .tabbar a { flex: 1; text-align: center; padding: 8px 0 10px; font-size: .72rem; color: var(--muted); }
+  .tabbar a span { display: block; font-size: 1.25rem; }
+  .tabbar a.active { color: var(--accent); font-weight: 700; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#forum" class="brand"><span class="brand-mark">א</span>בית <em>העורכים</em></a>
+    <nav class="mainnav" aria-label="ניווט ראשי">
+      <a href="#forum" data-nav="forum">💬 פורום</a>
+      <a href="#contests" data-nav="contests">🏆 תחרויות</a>
+      <a href="#jobs" data-nav="jobs">💼 לוח משרות</a>
+      <a href="#tools" data-nav="tools">🧰 ארגז כלים</a>
+    </nav>
+    <div class="top-actions">
+      <label class="search" aria-label="חיפוש">🔍<input type="search" placeholder="חיפוש בפורום…"></label>
+      <button class="icon-btn" id="themeBtn" aria-label="מצב כהה/בהיר">🌙</button>
+      <button class="icon-btn" aria-label="התראות">🔔<span class="dot"></span></button>
+      <span class="me" title="הפרופיל שלי">ש</span>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- =============== FORUM =============== -->
+  <section class="view" id="view-forum">
+    <div class="hero">
+      <h1>בית <em>העורכים</em></h1>
+      <p>הקהילה המקצועית למעמדים, מעצבים, מגיהים ועורכים בלשון הקודש, אידיש, עברית ואנגלית.</p>
+      <div class="hero-stats">
+        <div><b>1,284</b><span>חברים</span></div>
+        <div><b>6,930</b><span>אשכולות</span></div>
+        <div><b>47</b><span>משרות פתוחות</span></div>
+        <div><b>3</b><span>תחרויות פעילות</span></div>
+      </div>
+    </div>
+
+    <div class="worlds" id="worlds"></div>
+
+    <div class="grid-2">
+      <div>
+        <div class="section-head">
+          <div>
+            <h2 id="forumTitle">מה חדש בכל העולמות</h2>
+            <p id="forumSub">אשכולות אחרונים מכל השפות</p>
+          </div>
+          <button class="btn btn-primary" data-open="topicModal">+ נושא חדש</button>
+        </div>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-sort="recent">אחרונים</button>
+          <button class="tab" data-sort="popular">פופולריים</button>
+          <button class="tab" data-sort="unsolved">ממתינים לתשובה</button>
+        </div>
+        <div class="card" id="topicList"></div>
+      </div>
+
+      <aside class="side">
+        <div class="card contest-mini">
+          <h3>🏆 תחרות פעילה</h3>
+          <strong>צורת הדף 5787</strong>
+          <p style="font-size:.85rem;color:var(--muted)">עמדו דף משנה עם ברטנורא ותוספות יו"ט סביב</p>
+          <div class="countdown" data-deadline></div>
+          <a href="#contests" class="btn btn-primary" style="display:block;text-align:center">להגשה ←</a>
+        </div>
+        <div class="card">
+          <h3>💼 משרות חמות</h3>
+          <ul class="mini-list" id="miniJobs"></ul>
+          <a href="#jobs" style="color:var(--accent);font-weight:700;font-size:.9rem">לכל המשרות ←</a>
+        </div>
+        <div class="card">
+          <h3>⭐ עונים מובילים החודש</h3>
+          <ul class="mini-list">
+            <li>יהודה_ברקן <span class="pill gold">מגיה מוסמך</span><small>42 תשובות שסומנו כפתרון</small></li>
+            <li>מנחם_גראס <span class="pill">אידיש</span><small>31 תשובות</small></li>
+            <li>Rivka_D <span class="pill green">זוכת תחרות</span><small>27 תשובות</small></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- =============== CONTESTS =============== -->
+  <section class="view" id="view-contests">
+    <div class="section-head">
+      <div><h2>תחרויות עימוד ועיצוב</h2><p>הגישו, קבלו משוב משופטים מקצועיים, ובנו תיק עבודות.</p></div>
+      <button class="btn btn-ghost">📜 תקנון התחרויות</button>
+    </div>
+
+    <article class="card contest-feature">
+      <div class="contest-art" aria-hidden="true">
+        <div class="daf">
+          <div class="head">משנה · ברכות א</div>
+          <div class="col"></div><div class="col main"></div><div class="col"></div>
+        </div>
+      </div>
+      <div class="contest-body">
+        <div><span class="pill red">● פתוח להגשות</span> <span class="pill">לשון הקודש</span> <span class="pill gold">בחסות הוצאת "אור"</span></div>
+        <h2>צורת הדף 5787</h2>
+        <p style="color:var(--muted)">עמדו את פרק א' של מסכת ברכות עם פירוש ברטנורא ותוספות יום טוב סביב, בפורמט 17×24. נבחן: היררכיה טיפוגרפית, קריאות, דיוק בניקוד ושימוש מושכל בגופנים.</p>
+        <div class="steps">
+          <div class="step done">טיוטה</div><div class="step now">הגשות</div><div class="step">שיפוט</div><div class="step">הצבעת קהל</div><div class="step">תוצאות</div>
+        </div>
+        <div class="countdown" data-deadline></div>
+        <div class="prize-row">
+          <div class="prize"><b>₪1,500</b><span>מקום ראשון</span></div>
+          <div class="prize"><b>₪700</b><span>מקום שני</span></div>
+          <div class="prize"><b>🏅</b><span>תג "זוכה תחרות"</span></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" data-open="submitModal">הגשת עבודה</button>
+          <button class="btn btn-ghost">⬇ הורדת חומרי התחרות</button>
+          <span style="align-self:center;font-size:.85rem;color:var(--muted)">38 משתתפים הגישו</span>
+        </div>
+      </div>
+    </article>
+
+    <div class="blind-note">🔒 <div><b>הגשה עיוורת:</b> העבודות גלויות רק לכם ולשופטים עד סיום ההגשות. השופטים רואים "הגשה #7" ולא את שמכם. לאחר המועד כל העבודות מתפרסמות לדיון והצבעה.</div></div>
+
+    <div class="section-head"><h2 style="font-size:1.3rem">תחרויות נוספות</h2></div>
+    <div class="contest-grid" id="contestGrid"></div>
+  </section>
+
+  <!-- =============== JOBS =============== -->
+  <section class="view" id="view-jobs">
+    <div class="section-head">
+      <div><h2>לוח משרות</h2><p>עבודות עימוד, עיצוב, הגהה, ניקוד ותרגום — ופרילנסרים זמינים.</p></div>
+      <button class="btn btn-primary" data-open="jobModal">+ פרסום משרה</button>
+    </div>
+    <div class="jobs-layout">
+      <aside class="card filters" aria-label="סינון">
+        <h4>שפה</h4><div class="chips" data-filter="lang"></div>
+        <h4>תפקיד</h4><div class="chips" data-filter="role"></div>
+        <h4>סוג עבודה</h4><div class="chips" data-filter="type"></div>
+        <h4>התראות</h4>
+        <button class="btn btn-ghost" style="width:100%" id="alertBtn">🔔 הודיעו לי על משרות כאלה</button>
+      </aside>
+      <div>
+        <div class="seg" role="group" aria-label="סוג מודעה">
+          <button aria-pressed="true" data-kind="hiring">דרושים</button>
+          <button aria-pressed="false" data-kind="available">זמינים לעבודה</button>
+        </div>
+        <div id="jobList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============== TOOLS =============== -->
+  <section class="view" id="view-tools">
+    <div class="section-head"><div><h2>ארגז כלים</h2><p>כלים קטנים שחוסכים שעות לעורכים ולמעמדים.</p></div></div>
+    <div class="tools">
+      <div class="card tool"><div class="ic">🔤</div><h3>ממיר כתיב אידיש</h3><p>המרה בין כתיב חסידי לכתיב ייווא, עם הסבר לכל שינוי.</p></div>
+      <div class="card tool"><div class="ic">🔎</div><h3>פענוח ראשי תיבות</h3><p>מאגר קהילתי של ראשי תיבות ממקורות רבניים.</p></div>
+      <div class="card tool"><div class="ic">🧮</div><h3>מחשבון תמחור</h3><p>הערכת מחיר לפי עמוד, מילה או שעה — מבוסס על סקר חברי הקהילה.</p></div>
+      <div class="card tool"><div class="ic">📐</div><h3>ספריית GREP וסקריפטים</h3><p>סקריפטים ל-InDesign: הערות שוליים, ניקוד, מראי מקומות.</p></div>
+      <div class="card tool"><div class="ic">🅰️</div><h3>מאגר גופנים עבריים</h3><p>רשימת גופנים עם רישוי, מעצב ודוגמאות.</p></div>
+      <div class="card tool"><div class="ic">🔢</div><h3>גימטריה ומספור עברי</h3><p>המרת מספרים לאותיות לכותרות, עמודים וסימנים.</p></div>
+    </div>
+    <div class="card font-tester">
+      <h3>בודק גופנים</h3>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:10px">הקלידו טקסט וראו אותו בגופנים שונים.</p>
+      <textarea id="fontInput" rows="2">בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ</textarea>
+      <div class="font-samples" id="fontSamples"></div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="ניווט תחתון">
+  <a href="#forum" data-nav="forum"><span>💬</span>פורום</a>
+  <a href="#contests" data-nav="contests"><span>🏆</span>תחרויות</a>
+  <a href="#jobs" data-nav="jobs"><span>💼</span>משרות</a>
+  <a href="#tools" data-nav="tools"><span>🧰</span>כלים</a>
+</nav>
+
+<!-- =============== MODALS =============== -->
+<dialog id="jobModal">
+  <form method="dialog">
+    <div class="modal-head"><h3>פרסום משרה</h3><button class="icon-btn" value="cancel" aria-label="סגירה">✕</button></div>
+    <div class="modal-body">
+      <label>כותרת<input required placeholder="לדוגמה: דרוש מעמד לספר שו&quot;ת, 400 עמודים"></label>
+      <div class="row-2">
+        <label>שפה<select><option>לשון הקודש</option><option>אידיש</option><option>עברית</option><option>English</option></select></label>
+        <label>תפקיד<select><option>עימוד</option><option>עיצוב</option><option>הגהה</option><option>ניקוד</option><option>תרגום</option></select></label>
+      </div>
+      <div class="row-2">
+        <label>תקציב<input placeholder="₪ לעמוד / לפרויקט"></label>
+        <label>מועד יעד<input type="date"></label>
+      </div>
+      <label>תיאור<textarea rows="4" placeholder="היקף, תוכנה נדרשת, האם נדרשת עבודה לדוגמה…"></textarea></label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" checked> פניות יגיעו אליי בצ'אט פרטי</label>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" value="cancel">ביטול</button><button class="btn btn-primary" value="ok" data-toast="המשרה נשלחה לאישור מנהל ✓">פרסום</button></div>
+  </form>
+</dialog>
+
+<dialog id="submitModal">
+  <form method="dialog">
+    <div class="modal-head"><h3>הגשה — צורת הדף 5787</h3><button class="icon-btn" value="cancel" aria-label="סגירה">✕</button></div>
+    <div class="modal-body">
+      <div class="blind-note" style="margin:0">🔒 ההגשה תוצג לשופטים באופן אנונימי עד סיום התחרות.</div>
+      <label>קובץ PDF<input type="file" accept=".pdf"></label>
+      <label>תמונת תצוגה (PNG/JPG)<input type="file" accept="image/*"></label>
+      <label>הסבר קצר על הבחירות שלכם<textarea rows="3" placeholder="גופנים, גריד, היררכיה…"></textarea></label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" required> אני מאשר/ת שהעבודה מקורית ושהגופנים בה ברישיון</label>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" value="cancel">ביטול</button><button class="btn btn-primary" value="ok" data-toast="ההגשה התקבלה! בהצלחה 🏆">הגשה</button></div>
+  </form>
+</dialog>
+
+<dialog id="topicModal">
+  <form method="dialog">
+    <div class="modal-head"><h3>נושא חדש</h3><button class="icon-btn" value="cancel" aria-label="סגירה">✕</button></div>
+    <div class="modal-body">
+      <label>כותרת<input dir="auto" required></label>
+      <label>קטגוריה<select id="topicCat"></select></label>
+      <label>תוכן<textarea dir="auto" rows="6" placeholder="Markdown נתמך. ניתן לצרף PDF ותמונות."></textarea></label>
+      <label>תגיות<input placeholder="ניקוד, indesign, כתב-רש&quot;י"></label>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" value="cancel">ביטול</button><button class="btn btn-primary" value="ok" data-toast="הנושא פורסם ✓">פרסום</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const WORLDS = [
+  { key: 'holy',    glyph: 'קׂ', name: 'לשון הקודש', desc: 'ספרי קודש, שו"ת, הגהה, מראי מקומות וניקוד', count: 2410 },
+  { key: 'yiddish', glyph: 'ײ',  name: 'אידיש',     desc: 'עלונים, צייטונגען, ספרי חסידות וכללי כתיב', count: 1730 },
+  { key: 'hebrew',  glyph: 'ע',  name: 'עברית',     desc: 'עריכה לשונית, ספרותית, אקדמית וניקוד',       count: 1890 },
+  { key: 'english', glyph: 'Aa', name: 'English',   desc: 'Torah & general editing, translation, transliteration', count: 900 }
+];
+const COLORS = ['#b3261e','#14213d','#c8962e','#1f7a4d','#6d4bb3','#0e7490'];
+
+const TOPICS = [
+  { w:'holy', title:"פענוח ראשי תיבות קשים בכתב יד של ה'חתם סופר'", author:'יהודה_ברקן', replies:18, views:420, time:'לפני 12 דקות', tags:['כתבי-יד'], solved:true },
+  { w:'yiddish', title:"וויאזוי שרייבט מען ריכטיג: 'איבערגעגעבנקייט' אדער 'איבערגעבנקייט'?", author:'מנחם_גראס', replies:24, views:610, time:'לפני 45 דקות', tags:['כתיב'] },
+  { w:'holy', title:'עימוד צורת הדף ב-InDesign: איך לזרום פירוש סביב טקסט מרכזי?', author:'שלום_ע', replies:41, views:1900, time:'לפני שעה', tags:['indesign','צורת-הדף'], solved:true },
+  { w:'hebrew', title:'כללי האקדמיה ללשון לגבי כתיב מלא וחסר בספרות עיונית', author:'דניאל_ל', replies:15, views:380, time:'לפני שעתיים', tags:['כתיב'] },
+  { w:'english', title:'Transliteration rules for Hebrew terms in English Torah books', author:'David_R', replies:11, views:290, time:'3 hours ago', tags:['transliteration'] },
+  { w:'yiddish', title:'דיון תמחור: כמה מקובל לגבות עבור הגהת עלון שבועי באידיש?', author:'אברהם_פ', replies:31, views:1200, time:'לפני 4 שעות', tags:['תמחור'] },
+  { w:'hebrew', title:'המלצות על נקדנים לספרי ילדים — ומה התעריף?', author:'רחל_מ', replies:0, views:64, time:'לפני 5 שעות', tags:['ניקוד'] },
+  { w:'holy', title:'גופן רש"י שמתאים לגוף 8 בלי להתמרח בדפוס דיגיטלי', author:'אליעזר_ק', replies:0, views:88, time:'לפני 6 שעות', tags:['גופנים'] },
+  { w:'english', title:'Proofreading workflow for translated Halacha manuscripts', author:'Yitzchak_S', replies:5, views:140, time:'Yesterday', tags:['workflow'] }
+];
+
+const JOBS = [
+  { kind:'hiring', title:'דרוש מעמד לספר שו"ת — 400 עמודים', lang:'לשון הקודש', role:'עימוד', type:'פרויקט', pay:'₪18–22 לעמוד', who:'הוצאת "אור"', when:'לפני שעה', desc:'כולל הערות שוליים ומפתחות. InDesign ME חובה. עבודה לדוגמה נדרשת.', featured:true },
+  { kind:'hiring', title:'מגיה/ה לעלון שבועי באידיש', lang:'אידיש', role:'הגהה', type:'קבוע', pay:'₪350 לגיליון', who:'עלון "די שטימע"', when:'לפני 3 שעות', desc:'16 עמודים, כתיב חסידי. הגהה ביום רביעי בערב.' },
+  { kind:'hiring', title:'מעצב/ת כריכות לסדרת ספרי ילדים', lang:'עברית', role:'עיצוב', type:'פרויקט', pay:'לפי הצעה', who:'משה_ש', when:'אתמול', desc:'6 כריכות + עיצוב פנים בסיסי. סגנון חם וצבעוני.' },
+  { kind:'hiring', title:'Translator Hebrew → English for a Chassidus sefer', lang:'English', role:'תרגום', type:'פרויקט', pay:'$0.10/word', who:'Lev Publishing', when:'לפני יומיים', desc:'Approx. 60,000 words. Familiarity with Chassidic terminology required.' },
+  { kind:'hiring', title:'נקדן/ית לספר תפילות', lang:'עברית', role:'ניקוד', type:'פרויקט', pay:'₪9 לעמוד', who:'הוצאת "פאר"', when:'לפני 3 ימים', desc:'ניקוד מלא לפי נוסח ספרד. בדיקה כפולה.' },
+  { kind:'available', title:'מעמד ותיק — ספרי קודש ומפתחות', lang:'לשון הקודש', role:'עימוד', type:'פרויקט', pay:'מ-₪15 לעמוד', who:'שלום_ע', when:'היום', desc:'12 שנות ניסיון, 80+ ספרים. זמין מחודש כסלו. תיק עבודות בפרופיל.' },
+  { kind:'available', title:'מגיהה לאידיש ועברית', lang:'אידיש', role:'הגהה', type:'קבוע', pay:'לפי היקף', who:'חיה_ר', when:'לפני יומיים', desc:'מגיהה עלונים שבועיים כבר 6 שנים. מהירה ומדויקת.' },
+  { kind:'available', title:'Graphic designer — English & Hebrew', lang:'English', role:'עיצוב', type:'פרויקט', pay:'$40/hr', who:'Rivka_D', when:'השבוע', desc:'Book covers, logos, bilingual layouts. Contest winner 5786.' }
+];
+
+const CONTESTS = [
+  { title:'לוגו עברי לבית דפוס', lang:'עברית', status:'פתוח', color:'#14213d', glyph:'א', entries:21, left:'עוד 12 ימים' },
+  { title:'שער עיתון באידיש', lang:'אידיש', status:'בשיפוט', color:'#b3261e', glyph:'ײ', entries:17, left:'תוצאות בקרוב' },
+  { title:'אתגר ניקוד מהיר', lang:'עברית', status:'הצבעת קהל', color:'#1f7a4d', glyph:'בְּ', entries:54, left:'עוד 3 ימים' },
+  { title:'כריכת ספר — "פירוש על התורה"', lang:'לשון הקודש', status:'הסתיים', color:'#c8962e', glyph:'ס', entries:33, left:'זוכה: Rivka_D' },
+  { title:'Bilingual Haggadah spread', lang:'English', status:'פתוח', color:'#6d4bb3', glyph:'Aa', entries:9, left:'עוד 20 ימים' },
+  { title:'"תקנו את העימוד הגרוע"', lang:'כל השפות', status:'פתוח', color:'#0e7490', glyph:'✎', entries:28, left:'עוד 5 ימים' }
+];
+
+const FONTS = [
+  ['Frank Ruhl Libre', '"Frank Ruhl Libre", serif'],
+  ['Heebo', 'Heebo, sans-serif'],
+  ['David / serif', '"David Libre", David, serif'],
+  ['Arial / system sans', 'Arial, sans-serif']
+];
+
+// --- helpers ---
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const colorFor = s => COLORS[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % COLORS.length];
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+
+// --- worlds & topics ---
+let currentWorld = null, currentSort = 'recent';
+function renderWorlds() {
+  $('#worlds').innerHTML = WORLDS.map(w => `
+    <button class="world ${currentWorld === w.key ? 'selected' : ''}" data-world="${w.key}" aria-pressed="${currentWorld === w.key}">
+      <div class="glyph">${esc(w.glyph)}</div><h3>${esc(w.name)}</h3><p>${esc(w.desc)}</p>
+      <div class="count">${w.count.toLocaleString()} אשכולות</div>
+    </button>`).join('');
+  $$('.world').forEach(b => b.onclick = () => { currentWorld = currentWorld === b.dataset.world ? null : b.dataset.world; renderWorlds(); renderTopics(); });
+}
+function renderTopics() {
+  const world = WORLDS.find(w => w.key === currentWorld);
+  $('#forumTitle').textContent = world ? 'פורום ' + world.name : 'מה חדש בכל העולמות';
+  $('#forumSub').textContent = world ? world.desc : 'אשכולות אחרונים מכל השפות — לחצו על שפה לסינון';
+  let list = TOPICS.filter(t => !currentWorld || t.w === currentWorld);
+  if (currentSort === 'popular') list = [...list].sort((a, b) => b.views - a.views);
+  if (currentSort === 'unsolved') list = list.filter(t => t.replies === 0);
+  $('#topicList').innerHTML = list.length ? list.map(t => {
+    const wn = WORLDS.find(w => w.key === t.w).name;
+    return `<div class="topic">
+      <div class="avatar" style="background:${colorFor(t.author)}">${esc([...t.author][0])}</div>
+      <div style="min-width:0">
+        <a href="#forum" class="topic-title" dir="auto">${esc(t.title)}</a>
+        <div class="topic-meta"><span class="pill">${esc(wn)}</span>${t.tags.map(g => `<span>#${esc(g)}</span>`).join('')}
+          <span>· <b>${esc(t.author)}</b> · ${esc(t.time)}</span>${t.solved ? '<span class="solved">✓ נפתר</span>' : ''}</div>
+      </div>
+      <div class="topic-stats"><b>${t.replies}</b>תגובות</div>
+    </div>`; }).join('') : '<div class="empty">אין כאן אשכולות כרגע 🎉</div>';
+}
+$$('.tab').forEach(b => b.onclick = () => { $$('.tab').forEach(x => x.classList.toggle('active', x === b)); currentSort = b.dataset.sort; renderTopics(); });
+
+// --- jobs ---
+const jobFilters = { lang: null, role: null, type: null }; let jobKind = 'hiring';
+function renderFilterChips() {
+  ['lang', 'role', 'type'].forEach(key => {
+    const values = [...new Set(JOBS.map(j => j[key]))];
+    const box = $(`[data-filter="${key}"]`);
+    box.innerHTML = values.map(v => `<button class="chip" aria-pressed="${jobFilters[key] === v}" data-v="${esc(v)}">${esc(v)}</button>`).join('');
+    $$('.chip', box).forEach(c => c.onclick = () => { jobFilters[key] = jobFilters[key] === c.dataset.v ? null : c.dataset.v; renderFilterChips(); renderJobs(); });
+  });
+}
+function renderJobs() {
+  const list = JOBS.filter(j => j.kind === jobKind && Object.entries(jobFilters).every(([k, v]) => !v || j[k] === v));
+  $('#jobList').innerHTML = list.length ? list.map(j => `
+    <article class="card job ${j.featured ? 'featured' : ''}">
+      <div>
+        ${j.featured ? '<span class="pill gold">★ מודעה מקודמת</span>' : ''}
+        <h3 dir="auto">${esc(j.title)}</h3>
+        <div class="meta"><span class="pill red">${esc(j.lang)}</span><span class="pill">${esc(j.role)}</span><span class="pill">${esc(j.type)}</span></div>
+        <p dir="auto">${esc(j.desc)}</p>
+        <p style="margin-top:6px;font-size:.8rem">${esc(j.who)} · ${esc(j.when)}</p>
+      </div>
+      <div class="side-col">
+        <div class="pay">${esc(j.pay)}</div>
+        <button class="btn btn-primary" data-apply>${jobKind === 'hiring' ? 'הגשת מועמדות' : 'יצירת קשר'}</button>
+      </div>
+    </article>`).join('') : '<div class="card empty">לא נמצאו מודעות בסינון הזה. <br>נסו להסיר מסנן או להפעיל התראה 🔔</div>';
+  $$('[data-apply]').forEach(b => b.onclick = () => toast('נפתח צ\'אט פרטי עם המפרסם, כולל קישור לתיק העבודות שלך'));
+}
+$$('.seg button').forEach(b => b.onclick = () => { jobKind = b.dataset.kind; $$('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); renderJobs(); });
+$('#alertBtn').onclick = () => toast('התראה נשמרה — נעדכן אותך במייל ובפעמון');
+$('#miniJobs').innerHTML = JOBS.filter(j => j.kind === 'hiring').slice(0, 3).map(j => `<li>${esc(j.title)}<small>${esc(j.lang)} · ${esc(j.pay)}</small></li>`).join('');
+
+// --- contests ---
+const statusPill = { 'פתוח':'red', 'בשיפוט':'gold', 'הצבעת קהל':'green', 'הסתיים':'' };
+$('#contestGrid').innerHTML = CONTESTS.map(c => `
+  <article class="card contest-card">
+    <div class="thumb" style="background:${c.color}">${esc(c.glyph)}</div>
+    <div class="body">
+      <div><span class="pill ${statusPill[c.status]}">${esc(c.status)}</span> <span class="pill">${esc(c.lang)}</span></div>
+      <h3 style="font-size:1.1rem">${esc(c.title)}</h3>
+      <div class="foot"><span>${c.entries} הגשות</span><span>${esc(c.left)}</span></div>
+    </div>
+  </article>`).join('');
+
+const deadline = Date.now() + ((9 * 24 + 14) * 60 + 32) * 60 * 1000;
+function tick() {
+  let s = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+  const html = [[d,'ימים'],[h,'שעות'],[m,'דקות'],[sec,'שניות']].map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('');
+  $$('[data-deadline]').forEach(el => el.innerHTML = html);
+}
+tick(); setInterval(tick, 1000);
+
+// --- tools: font tester ---
+function renderFonts() {
+  const txt = $('#fontInput').value;
+  $('#fontSamples').innerHTML = FONTS.map(([n, f]) => `<div><small>${esc(n)}</small><p style="font-family:${f}">${esc(txt)}</p></div>`).join('');
+}
+$('#fontInput').oninput = renderFonts;
+
+// --- modals ---
+$('#topicCat').innerHTML = WORLDS.map(w => `<option>${esc(w.name)}</option>`).join('') + '<option>פונטים עבריים</option><option>InDesign / תוכנות</option>';
+$$('[data-open]').forEach(b => b.onclick = () => $('#' + b.dataset.open).showModal());
+$$('dialog').forEach(d => d.addEventListener('close', () => { const btn = $(`[data-toast]`, d); if (d.returnValue === 'ok' && btn) toast(btn.dataset.toast); }));
+
+// --- routing ---
+function route() {
+  const v = (location.hash || '#forum').slice(1);
+  const name = ['forum', 'contests', 'jobs', 'tools'].includes(v) ? v : 'forum';
+  $$('.view').forEach(s => s.classList.toggle('active', s.id === 'view-' + name));
+  $$('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === name));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.addEventListener('hashchange', route);
+
+// --- theme ---
+const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+let theme; try { theme = localStorage.getItem('theme'); } catch (e) {}
+function setTheme(t) { document.documentElement.dataset.theme = t; $('#themeBtn').textContent = t === 'dark' ? '☀️' : '🌙'; try { localStorage.setItem('theme', t); } catch (e) {} }
+setTheme(theme || (prefersDark ? 'dark' : 'light'));
+$('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+renderWorlds(); renderTopics(); renderFilterChips(); renderJobs(); renderFonts(); route();
+</script>
+</body>
+</html>
