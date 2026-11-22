@@ -1,0 +1,13 @@
+{
+  "name": "nodebb-plugin-contests",
+  "version": "0.0.1",
+  "description": "Contests for בית העורכים: blind submissions, judging rubric, 70% judges / 30% public vote. Work in progress: only the scoring engine exists so far.",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

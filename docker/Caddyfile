@@ -1,0 +1,5 @@
+# Automatic HTTPS (Let's Encrypt) for the forum. WebSockets are proxied automatically.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy nodebb:4567
+}

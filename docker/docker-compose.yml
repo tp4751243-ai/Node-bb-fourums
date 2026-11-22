@@ -1,0 +1,52 @@
+# בית העורכים: NodeBB in Docker, database on Supabase (Postgres), HTTPS by Caddy.
+# Step-by-step guide: docker/README.md
+name: beit-haorchim
+
+services:
+  nodebb:
+    image: ghcr.io/nodebb/nodebb:4.16 # NodeBB 4.16.x (patch updates only); raise it on purpose
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODEBB_PORT: "4567"
+      NODEBB_DB: postgres
+      NODEBB_DB_SSL: "true"
+      # Supabase signs its database certificate with its own CA. Trusting that CA keeps TLS verified.
+      NODE_EXTRA_CA_CERTS: /opt/certs/supabase-ca.crt
+      # Stay below the pool size shown in Supabase (Database > Settings > Connection pooling).
+      postgres__options__max: "10"
+      # Real visitor IPs (bans, rate limits): trust only the proxy on the private Docker network.
+      trust_proxy: uniquelocal
+      # Our own plugins, mounted read-only below and installed when the container starts.
+      NODEBB_ADDITIONAL_PLUGINS: /opt/plugins/nodebb-plugin-trust-tiers
+    volumes:
+      - nodebb-config:/opt/config
+      - nodebb-uploads:/usr/src/app/public/uploads
+      - nodebb-build:/usr/src/app/build
+      - ./certs:/opt/certs:ro
+      - ../plugins:/opt/plugins:ro
+    expose:
+      - "4567" # reachable only through Caddy
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - nodebb
+
+volumes:
+  nodebb-config:
+  nodebb-uploads:
+  nodebb-build:
+  caddy-data:
+  caddy-config:

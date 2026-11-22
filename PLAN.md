@@ -1,236 +1,246 @@
-# בית העורכים — Plan for a NodeBB community for Hebrew & Yiddish typesetters and designers
+# בית העורכים: plan for a NodeBB community of Hebrew and Yiddish typesetters and designers
 
 ## 1. Vision
 
 A professional home for people who **set, design, proofread and publish** Jewish-language text:
-seforim, journals, weekly alonim, Yiddish newspapers, kids' books, academic Hebrew, English Torah books.
+seforim, journals, weekly alonim, Yiddish newspapers, children's books, academic Hebrew, English Torah books.
 
 The site has three pillars:
 
 | Pillar | What it is | Why people come back |
 |---|---|---|
 | **Forum** (פורום) | Q&A and discussion, split by language "world" | Daily problem-solving: nikud, fonts, InDesign, spelling rules |
-| **Contests** (תחרויות) | Design/typesetting challenges with a brief, deadline, blind submissions and judging | Portfolio-building, recognition, fun |
-| **Jobs** (לוח משרות) | Job posts + "available for work" listings | Income — the strongest reason to register |
+| **Contests** (תחרויות) | Design and typesetting challenges with a brief, a deadline, blind submissions and judging | Portfolio building, recognition, fun |
+| **Jobs** (לוח משרות) | Job posts and "available for work" listings | Income, the strongest reason to register |
 
-Everything is built on **open-source NodeBB (v4.x, GPLv3)**, using built-in features first and
-custom plugins only where NodeBB has no answer.
+Everything is built on **open-source NodeBB (v4.x, GPLv3)**. Built-in features come first, and custom plugins
+are written only where NodeBB has no answer.
+
+## Decisions
+
+| Topic | Decision | Where it lives |
+|---|---|---|
+| Database | **PostgreSQL on Supabase**, through the session pooler with verified TLS, using a dedicated `nodebb` role, with the Data API off | [`docker/`](docker/README.md) |
+| Who can post jobs | **A 5-tier trust ladder.** Tier 2 (5 posts and a confirmed email) can post jobs, but a moderator approves them. From tier 3 they publish instantly | [`plugins/nodebb-plugin-trust-tiers`](plugins/nodebb-plugin-trust-tiers/README.md) |
+| Contest judging | **70% judges, 30% public vote.** Both are put on the same 0–100 scale first. Voting is open from tier 2 | [`plugins/nodebb-plugin-contests`](plugins/nodebb-plugin-contests/README.md) |
+| ActivityPub (federation) | **Off.** The community stays on this site | [`scripts/bootstrap.mjs`](scripts/bootstrap.mjs) |
+| Monetization | Still open (see §9) | |
 
 ---
 
 ## 2. Information architecture (NodeBB categories)
 
-NodeBB categories can be nested, have their own icon/color/background, and have per-group privileges.
-Map your four language "cubes" to top-level categories:
+[`scripts/bootstrap.mjs`](scripts/bootstrap.mjs) creates this tree, with its privileges, on a fresh install:
 
 ```
 📜 לשון הקודש
-   ├─ עימוד ספרי קודש (layout of seforim: tzuras hadaf, Rashi script, mefarshim around text)
+   ├─ עימוד ספרי קודש (צורת הדף, כתב רש"י, mefarshim around the text)
    ├─ הגהה ומראי מקומות
    ├─ פענוח כתבי יד וראשי תיבות
    └─ ניקוד וטעמים
 📖 אידיש
-   ├─ כתיב: חסידיש vs. ייווא (spelling conventions)
+   ├─ כתיב: חסידיש וייווא
    ├─ עלונים וצייטונגען
-   └─ איבערזעצונגען (translation)
+   └─ איבערזעצונגען · תרגום
 ✒️ עברית
-   ├─ עריכה לשונית / ספרותית / אקדמית
+   ├─ עריכה לשונית, ספרותית ואקדמית
    ├─ ניקוד לספרי ילדים
    └─ כללי האקדמיה ללשון
 🔤 English
    ├─ Transliteration standards
    └─ Translating Torah works
-🛠 Cross-language (shared)
-   ├─ InDesign / Affinity / QuarkXPress (RTL, ME edition, scripts, GREP)
-   ├─ פונטים עבריים (font identification, licensing, kerning)
-   ├─ דפוס והפקה (prepress, paper, binding, printers' specs)
-   ├─ Portfolio / show your work
-   └─ עסקים ותמחור (pricing, contracts, getting paid)
-🏆 תחרויות           ← powered by the contests plugin
-💼 לוח משרות         ← powered by the jobs plugin
-📣 הכרזות והנהלה
+🛠 כלים ומקצוע (shared by all languages)
+   ├─ InDesign ותוכנות עימוד
+   ├─ פונטים עבריים
+   ├─ דפוס והפקה
+   ├─ תיק עבודות
+   └─ עסקים ותמחור
+🏆 תחרויות                staff open contests; upvotes (= public vote) from tier 2, no downvotes
+💼 לוח משרות              staff-only topics (posting guide)
+   ├─ דרושים               new topics from tier 2; tier 2 posts wait for approval
+   └─ זמינים לעבודה         same rule
+☕ חדר המקצוענים          visible only from tier 4
+📣 הכרזות והנהלה          staff-only topics
 ```
 
-Tip: keep **"Jobs" and "Contests" global** (a filter by language inside them), rather than duplicating
-them in each language world — the audience is small and splitting it makes boards look empty.
+Jobs and Contests are **global**, with the language as a field or tag, rather than duplicated in each language
+world. The audience is small, and splitting it would make the boards look empty.
 
 ---
 
-## 3. Features — what NodeBB gives you out of the box
+## 3. What NodeBB gives you out of the box
 
-Turn these on and configure them before writing any code:
+- **RTL and Hebrew UI.** NodeBB ships a Hebrew translation (`he`) and flips the layout to RTL.
+- **Harmony theme** (the default). Modern and mobile-friendly; copy it for the custom look.
+- **Groups and badges.** Used for the trust tiers, and later for "מגיה מוסמך", "זוכה תחרות", "Employer".
+- **Reputation and upvotes.** These feed the trust tiers.
+- **Post queue.** The bootstrap sets `postQueueReputationThreshold` to 0, so only a member's **first** post (and links
+  from brand-new members) waits for approval. NodeBB's default would hold every post until someone upvotes the author.
+- **Tags, chat, uploads, custom profile fields** (ACP → Manage → Custom user fields): languages, software,
+  portfolio URL, "open for work".
+- **Webhooks and the Write API**, for later integrations (newsletter, WhatsApp/Telegram digests).
+- **ActivityPub is turned off** by the bootstrap (`activitypubEnabled = 0`).
 
-- **RTL & Hebrew UI** — NodeBB ships a Hebrew translation (`he`) and flips the layout to RTL automatically.
-- **Harmony theme** (default in v3/v4) — modern, mobile-friendly; fork it for the custom look.
-- **Groups + badges** — e.g. "מגיה מוסמך", "Verified Typesetter", "Contest Winner 5786", "Employer".
-  Groups can be shown as badges next to usernames and can gate categories.
-- **Reputation / upvotes** — reward good answers; set minimum reputation for posting in Jobs (anti-spam).
-- **Tags** — `nikud`, `indesign`, `rashi-script`, `kerning`, `yivo`, `footnotes`…
-- **Chat** (private + group rooms) — used for "Apply to job" and contest judges' room.
-- **Topic thumbnails & uploads** — portfolio images, PDF samples.
-- **Post queue / moderation** — queue first posts of new users.
-- **Custom profile fields** (ACP → Manage → Custom user fields in v4) — languages, software, years of experience,
-  portfolio URL, "open for work" toggle.
-- **Webhooks / Write API** — for later integrations (newsletter, WhatsApp/Telegram digests).
-- **ActivityPub** (v4) — consider *disabling* federation if the community prefers to stay private.
+> NodeBB also has built-in *Rewards* (for example "50 posts → join a group"). It can't combine conditions (posts **and**
+> reputation **and** account age), demote people, or moderate job posts, which is why the trust tiers are a plugin.
 
-### Recommended official / well-maintained plugins
+### Recommended plugins
 
 | Plugin | Use |
 |---|---|
-| `nodebb-plugin-markdown` + `nodebb-plugin-composer-default` | Posting (default) |
-| `nodebb-plugin-mentions`, `nodebb-plugin-emoji` | Default social features |
-| `nodebb-plugin-dbsearch` | Search — test Hebrew search quality early (prefixes ו/ה/ב/ל/מ/ש hurt matching) |
-| `nodebb-plugin-reactions` | Lightweight reactions on posts and contest entries |
-| `nodebb-plugin-poll` | Public-vote rounds in contests, community polls |
+| `nodebb-plugin-markdown`, `nodebb-plugin-composer-default`, `nodebb-plugin-mentions`, `nodebb-plugin-emoji` | Bundled with NodeBB |
+| `nodebb-plugin-dbsearch` | Search. Test Hebrew search early, because prefixes (ו/ה/ב/ל/מ/ש) hurt matching |
 | `nodebb-plugin-question-and-answer` | Mark a reply as "solved" in help categories |
 | `nodebb-plugin-calendar` | Contest deadlines, webinars, meetups |
-| `nodebb-plugin-2factor`, `nodebb-plugin-sso-google` | Security & easy login |
-| `nodebb-plugin-s3-uploads` (or similar) | Store large PDF/image uploads off-server |
+| `nodebb-plugin-2factor`, `nodebb-plugin-sso-google` | Security and easy login |
+| An S3 uploads plugin | Keeps large PDF and image uploads off the server |
 | `nodebb-plugin-spam-be-gone` | Anti-spam |
 
-> Always check each plugin's compatibility with your exact NodeBB version in the ACP plugin list before installing.
+> Check each plugin's compatibility with your exact NodeBB version in the ACP before installing.
 
 ---
 
-## 4. Custom plugins you will need to build
+## 4. Custom plugins
 
-NodeBB plugins are Node.js packages (`nodebb-plugin-*`) that hook into the core (`plugin.json` → hooks,
-routes, templates, ACP pages). Two custom plugins make this site unique.
+### 4.1 `nodebb-plugin-trust-tiers` · דרגות אמון (**built and tested**)
 
-### 4.1 `nodebb-plugin-contests` — תחרויות
+| Tier | Badge | Needs (plus every lower tier's needs) | Unlocks |
+|---|---|---|---|
+| 1 | נקודה · Dot | registered | post in the forum, enter contests |
+| 2 | אות · Letter | **5 posts or answers**, confirmed email, reputation ≥ 0 | **post jobs** (moderated), upload PDFs, vote in contests |
+| 3 | שורה · Line | 30 posts, reputation 15, 14 days | jobs publish instantly, signature with links |
+| 4 | עמוד · Page | 100 posts, reputation 60, 60 days | professionals' lounge, eligible to judge |
+| 5 | ספר · Book | 300 posts, reputation 200, 180 days | moderator or mentor candidate, featured listing |
 
-**Why custom:** NodeBB privileges cannot do "everyone can post, but only you and judges see your post until the deadline".
-Blind submission is the core of a fair contest, so it needs its own storage.
+How it works:
 
-**Lifecycle**
+- Each tier is a NodeBB group, so the badge appears next to every post.
+- Tiers update immediately on posts, votes, logins, email confirmation and bans, and an hourly sweep catches age-based promotions.
+- Members get a notification when they move up. Banned members lose their tier and get it back on unban.
+- All the numbers, badge names and manual overrides (for example, a publisher you verified) are set in the ACP.
+
+Tested end to end on NodeBB 4.16.9 + Postgres: all 38 checks passed. Details in its [README](plugins/nodebb-plugin-trust-tiers/README.md).
+
+### 4.2 `nodebb-plugin-contests` · תחרויות (scoring engine **built**, the rest is phase 2)
+
+**Why custom:** NodeBB permissions can't express "everyone can submit, but only you and the judges see your entry
+until the deadline", and blind submission is what makes a contest fair.
 
 ```
-Draft → Open for submissions → Judging (closed) → Public vote (optional) → Results → Archived
+Draft → Open for submissions → Judging → Public vote → Results → Archived
 ```
 
-**Features**
-- Contest page: brief, sample text to set (e.g. "set this daf of Mishnah with Bartenura around it"),
-  rules, allowed file types (PDF/PNG/IDML), prizes, sponsor, deadline countdown.
-- **Blind submissions**: stored in the plugin's own DB keys (`contest:<id>:entries`), visible only to the
-  author + `contest-judges` group. Optional anonymous mode (judges see "Entry #7", not names).
-- **Judging rubric**: per-criterion scores (readability, typographic hierarchy, nikud accuracy, creativity).
-- **Reveal**: at the deadline, the plugin auto-publishes each entry as a topic in the contest category,
-  so normal comments/reactions work.
-- **Public vote** (optional): one vote per verified account, account age ≥ N days, no voting for yourself.
-- **Results**: winners page; auto-award a group badge ("זוכה תחרות") + reputation bonus; entries feed into profiles.
-- Categories of contests: cover design, page layout (צורת הדף), Hebrew lettering/logo, Yiddish newspaper front page,
-  nikud accuracy speed-challenge, "fix this bad layout" challenge.
-- Sponsored contests: publishers/printers sponsor prizes and get the winning design → a revenue stream.
+- **Contest page:** brief, sample text to set (for example "set this Mishnah with Bartenura around it"), rules, file types
+  (PDF/PNG/IDML), prizes, sponsor, countdown.
+- **Blind submissions** stored by the plugin, visible only to the author and the judges. Judges see "Entry #7", not names.
+- **Judging rubric** (1–10 each): readability 30%, typographic hierarchy 25%, accuracy (nikud, text) 25%, creativity 20%.
+- **Scoring, 70/30 (done):** judge points and public points are each scaled so the best entry gets 100 and the
+  weakest 0. Then **final = 0.7 × judges + 0.3 × public**. Without the scaling, the public's 30% would outweigh
+  the judges, because vote counts spread much more than judges' averages. In practice the judges' pick wins a
+  head-to-head disagreement, and the public decides close calls.
+- **Who votes:** tier 2+, not for yourself, judges don't vote, at most 3 entries per voter.
+- **Reveal** at the deadline: each entry becomes a topic, so comments and votes work normally.
+- **Results:** a winners page, a "זוכה תחרות" badge, and entries that feed into profiles.
+- **Sponsored contests:** publishers and printers fund prizes, which is a revenue stream.
 
-**Data model sketch**
-```
-contest:<cid>            hash  { title, brief, lang, type, opensAt, closesAt, voteEndsAt, status, rubric, prizes, sponsor }
-contests:sorted          zset  score = closesAt
-contest:<cid>:entries    zset  uid → submittedAt
-contest:<cid>:entry:<uid> hash { files, note, tid (after reveal), scores, votes }
-```
+### 4.3 Jobs board · לוח משרות
 
-### 4.2 `nodebb-plugin-jobs` — לוח משרות
+**Now (no extra code):** the דרושים / זמינים לעבודה boards, gated by trust tier and moderated for tier 2, with a pinned
+posting guide (language, role, budget, deadline, required software).
 
-**Why custom:** a plain category works for v1, but jobs need structured fields, filters, expiry and an "apply" flow.
+**Phase 2, `nodebb-plugin-jobs`:**
 
-**Two listing types**
-1. **דרושים** — employer posts a job.
-2. **זמין לעבודה** — freelancer posts availability + portfolio.
+- structured fields (language, role, job type, remote/location, budget per page/word/project, deadline)
+- a filter page
+- **Apply**, which opens a private chat with the poster and includes the applicant's portfolio
+- auto-expiry after 30 days and a "Filled" button
+- alerts ("notify me of new Yiddish proofreading jobs")
+- a "report scam" button
+- two-way reviews after a job
+- optional paid featured posts
 
-**Structured fields**: language (לה"ק / אידיש / עברית / English), role (typesetter, designer, proofreader,
-nikud, translator, editor), job type (one-off / ongoing / full-time), remote/location, budget range or
-"per page / per word", deadline, required software, sample required (yes/no).
+### 4.4 Smaller pieces (phase 3)
 
-**Features**
-- Filter + search page (`/jobs`) with chips for language and role.
-- **Apply** button → opens a NodeBB private chat with the poster, pre-filled with the applicant's profile & portfolio
-  (no public bidding wars in comments).
-- Auto-expiry after 30 days; poster can mark **"נמצא מועמד / Filled"**.
-- Email/push **alerts**: "notify me of new Yiddish proofreading jobs".
-- Trust & safety: only users with verified email + min reputation, or the `Employer` group, can post;
-  first job of each poster goes to moderation queue; "report scam" button.
-- **Reviews after the job** (both sides, 1–5 + text) — builds the reputation that makes the board valuable.
-- Optional paid "featured" job posts — another revenue stream.
-
-**v1 shortcut (no code):** create a "Jobs" category with a **topic template** (pinned how-to + required tags
-like `lang-yiddish`, `role-proofreader`) and use `question-and-answer` "solved" as "filled". Move to the plugin in phase 2.
-
-### 4.3 Smaller custom pieces (phase 3)
-- **ארגז כלים / Toolbox** pages (custom pages via `nodebb-widget-*` or a small plugin):
-  - Gematria & roshei-teivos lookup, Yiddish spelling converter (YIVO ↔ Hasidic), Hebrew font list with
-    licensing notes, InDesign GREP/script library, price calculator (per page / per word / per hour).
-- **Font preview widget** — in posts, render ` ```font:Frank Ruhl Libre ``` ` blocks with that font.
-- **PDF preview** in posts (render first page as image on upload).
-- **Weekly digest** — "best answers + new jobs + contest deadlines" email.
+- **Toolbox · ארגז כלים:** Yiddish spelling converter (YIVO ↔ Hasidic), roshei-teivos lookup, Hebrew font list with
+  licensing notes, InDesign GREP/script library, price calculator.
+- **Font preview** blocks in posts, **PDF preview** on upload, and a **weekly digest** email.
 
 ---
 
 ## 5. UI / UX direction
 
-The prototype in [`mockup/index.html`](mockup/index.html) shows the direction. Key decisions:
+The prototype in [`mockup/index.html`](mockup/index.html) shows the direction, including tier badges, the
+"your progress to the next tier" card, the locked job-post button and the 70/30 results card.
 
-- **Typographic identity**: headings in a classical Hebrew serif (Frank Ruhl Libre), body in a clean sans
-  (Heebo/Assistant). The site itself should look *well typeset* — that is the best marketing for this audience.
-- **Palette**: ink-navy, paper-cream, and a printer's-red / gold accent. Full dark mode.
-- **Language worlds** stay as the landing experience (your 4 cubes), but the forum home also shows a unified
-  "what's new" feed so a user isn't trapped in one language.
-- **One global header**: Forum · Contests · Jobs · Toolbox · search · notifications · avatar.
-  The language switcher becomes a pill/segment control, not a full-screen detour.
-- **Mixed-direction text**: set `dir="auto"` on titles/posts so English topics render LTR inside the RTL site.
-- **Mobile first**: many users will browse on phones; bottom tab bar on mobile.
-- **Accessibility**: real buttons/links (not `div onclick`), visible focus, AA contrast.
+- **Typographic identity:** headings in a classical Hebrew serif (Frank Ruhl Libre), body in a clean sans (Heebo).
+  The site should itself look *well typeset*, which is the best marketing for this audience.
+- **Palette:** ink navy, paper cream, printer's red and gold. Full dark mode.
+- **Language worlds** as filters on one "what's new" feed, so nobody is trapped in one language.
+- **One header:** Forum · Contests · Jobs · Toolbox, plus search, notifications and avatar. A bottom tab bar on phones.
+- **Mixed direction:** `dir="auto"` on titles and posts, so English renders left to right.
+- **Accessibility:** real buttons and links, visible focus, AA contrast.
 
-Implementing the design in NodeBB: fork `nodebb-theme-harmony` → `nodebb-theme-beit-haorchim`,
-override SCSS variables and templates (`.tpl` Benchpress files). Small changes can be done with ACP → Appearance → Custom CSS first.
+To implement it in NodeBB, copy `nodebb-theme-harmony` into `nodebb-theme-beit-haorchim` and override its SCSS and templates.
+Small changes can start in ACP → Appearance → Custom CSS.
 
 ---
 
 ## 6. Technical setup
 
-- **Stack**: NodeBB v4 · Node.js LTS · **PostgreSQL** or **MongoDB** (both fine; Redis additionally for sessions/pubsub if you scale) · nginx reverse proxy with TLS · Docker Compose (NodeBB's repo ships a `docker-compose.yml` to start from).
-- **Hosting**: a 2 vCPU / 4 GB VPS is plenty for the first few thousand users. Uploads to S3-compatible storage.
-- **Backups**: nightly DB dump + uploads sync, tested restore.
-- **Email**: transactional provider (SMTP plugin) — needed for verification, job alerts, digests.
-- **Repo layout** (suggested):
+Full walkthrough: [`docker/README.md`](docker/README.md).
+
+- **App:** NodeBB 4.16 in Docker (`ghcr.io/nodebb/nodebb:4.16`) on a 2 vCPU / 4 GB VPS, with Caddy for automatic HTTPS.
+- **Database: Supabase Postgres.**
+  - Use the **session pooler (port 5432)**. NodeBB uses prepared statements, which the transaction pooler (6543) breaks.
+  - Connect as a **dedicated `nodebb` role** ([SQL](docker/supabase/01-nodebb-role.sql)). Supabase automatically exposes tables
+    made by the default `postgres` role to its REST API. NodeBB must use the `public` schema (it hard-codes it) and
+    stores password hashes and emails there.
+  - **Turn the Data API off** in Supabase.
+  - **Verified TLS:** trust Supabase's CA certificate through `NODE_EXTRA_CA_CERTS`.
+  - **Pool size:** keep it under the pooler limit (`postgres__options__max=10`).
+  - **Region:** put the server in the **same region** as the database, because NodeBB runs many small queries per page.
+- **Email (SMTP) is required**, because tier 2 needs a confirmed email address.
+- **Backups:** Supabase daily backups (Pro plan), plus the uploads volume (or S3 uploads).
+- **Repository layout:**
   ```
-  /docker            compose files, nginx config
-  /plugins/nodebb-plugin-contests
-  /plugins/nodebb-plugin-jobs
-  /themes/nodebb-theme-beit-haorchim
-  /mockup            static UI prototype
+  docker/                         compose file, Caddy, Supabase SQL, deploy guide
+  plugins/nodebb-plugin-trust-tiers   the 5-tier ladder (done)
+  plugins/nodebb-plugin-contests      scoring engine (done), plugin (phase 2)
+  scripts/bootstrap.mjs           categories, privileges, ActivityPub off
+  mockup/                         static UI prototype
   ```
-  Develop plugins locally with `npm link` into the NodeBB install, then `./nodebb build && ./nodebb restart`.
 
 ---
 
 ## 7. Roadmap
 
-| Phase | Scope | Rough effort |
+| Phase | Scope | Status |
 |---|---|---|
-| **0 — Setup** (week 1) | Install NodeBB + DB in Docker, Hebrew language, categories, groups, core plugins, custom CSS | days |
-| **1 — Soft launch** (weeks 2–4) | Invite 30–50 known typesetters; Jobs as a templated category; first contest run manually (submissions by chat to an admin) | low |
-| **2 — Plugins** (months 2–3) | `nodebb-plugin-jobs` (fields, filters, apply-by-chat, expiry, alerts); `nodebb-plugin-contests` (blind submissions, judging, reveal, badges) | main dev work |
-| **3 — Theme & tools** (months 3–4) | Custom theme from the mockup, toolbox pages, font preview, digest email | medium |
-| **4 — Growth** | Sponsored contests, featured jobs, reviews, mentorship program, webinars | ongoing |
+| **0 · Setup** | Supabase + Docker, trust tiers, categories and privileges, ActivityPub off | **Ready to deploy** (`docker/README.md`) |
+| **1 · Soft launch** (weeks 2–4) | Invite 30–50 known typesetters, seed content, first contest run by hand (the 70/30 scoring engine is ready) | next |
+| **2 · Plugins** (months 2–3) | Contests plugin (blind submissions, judging UI, reveal), jobs plugin (fields, apply-by-chat, expiry, alerts) | |
+| **3 · Theme and tools** (months 3–4) | Custom theme from the mockup, toolbox, font preview, digest email | |
+| **4 · Growth** | Sponsored contests, featured jobs, reviews, mentorship, webinars | |
 
 ---
 
-## 8. Community & policy notes
+## 8. Community and policy notes
 
-- Write clear rules: no posting of copyrighted fonts or pirated software; credit original designers in contests;
-  contest entries' rights stay with the designer unless a sponsored contest states otherwise.
-- Decide early on moderation standards for images (many members will expect a clean, "kosher" visual environment).
-- Seed content before launch: 20–30 high-quality Q&A threads, a font guide, and a pricing survey thread.
-- Launch with a contest — it's the fastest way to bring designers in and generate showcase content.
+- **Write clear rules:**
+  - No copyrighted fonts or pirated software.
+  - Credit original designers.
+  - Contest entries stay the designer's property unless a sponsored contest says otherwise.
+- **Moderation standards for images:** decide early. Many members will expect a clean, "kosher" visual environment.
+- **Review the tier thresholds after the first month.** If tier 2 attracts spam, add an account-age requirement
+  (for example 2 days) in the ACP. If honest members wait too long, lower the tier 3 numbers.
+- **Seed content before launch:** 20–30 strong Q&A threads, a font guide and a pricing-survey thread.
+- **Launch with a contest.** It brings designers in and creates showcase content.
 
 ---
 
-## 9. Open decisions
+## 9. Still open
 
-1. Database: PostgreSQL vs. MongoDB?
-2. Language worlds as top-level categories (recommended) or separate sub-sites?
-3. Who can post jobs: anyone verified, or only approved `Employer` group?
-4. Contest judging: judges only, public vote only, or hybrid (recommended: 70% judges / 30% public)?
-5. Monetization: none at first, sponsored contests, featured jobs?
+1. **Monetization:** none at first, sponsored contests, or featured job posts?
+2. **Email provider** for SMTP (needed before launch).
+3. **Domain**, and the **Supabase region and plan** (Pro is recommended for the live site).
+4. **"Available for work" listings:** they currently follow the same tier-2 rule as job posts. Should freelancers be able to list themselves from day one?

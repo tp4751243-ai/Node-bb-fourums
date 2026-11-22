@@ -1,0 +1,31 @@
+{
+	"id": "nodebb-plugin-trust-tiers",
+	"name": "Trust tiers · דרגות אמון",
+	"description": "Five-step trust ladder (Dot, Letter, Line, Page, Book) driven by posts, reputation and account age. Gives badges, unlocks privileges through groups, and moderates job posts from new members.",
+	"library": "./library.js",
+	"templates": "templates",
+	"modules": {
+		"../admin/plugins/trust-tiers.js": "./public/admin.js"
+	},
+	"settingsRoute": "/admin/plugins/trust-tiers",
+	"hooks": [
+		{ "hook": "static:app.load", "method": "init" },
+		{ "hook": "static:api.routes", "method": "addApiRoutes" },
+		{ "hook": "filter:admin.header.build", "method": "addAdminNavigation" },
+		{ "hook": "filter:user.whitelistFields", "method": "whitelistFields" },
+		{ "hook": "filter:post.shouldQueue", "method": "shouldQueue" },
+		{ "hook": "action:settings.set", "method": "onSettingsSet" },
+		{ "hook": "action:post.save", "method": "onPostSave" },
+		{ "hook": "action:post.delete", "method": "onPostChange" },
+		{ "hook": "action:post.restore", "method": "onPostChange" },
+		{ "hook": "action:posts.purge", "method": "onPostsPurge" },
+		{ "hook": "action:post.upvote", "method": "onVote" },
+		{ "hook": "action:post.downvote", "method": "onVote" },
+		{ "hook": "action:post.unvote", "method": "onVote" },
+		{ "hook": "action:user.create", "method": "onUserCreate" },
+		{ "hook": "action:user.loggedIn", "method": "onUserEvent" },
+		{ "hook": "action:user.email.confirmed", "method": "onUserEvent" },
+		{ "hook": "action:user.banned", "method": "onUserEvent" },
+		{ "hook": "action:user.unbanned", "method": "onUserEvent" }
+	]
+}

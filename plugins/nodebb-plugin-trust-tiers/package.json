@@ -1,0 +1,24 @@
+{
+  "name": "nodebb-plugin-trust-tiers",
+  "version": "0.1.0",
+  "description": "Five-step trust ladder for NodeBB: badges, privileges and moderated job posts based on posts, reputation and account age.",
+  "main": "library.js",
+  "private": true,
+  "license": "UNLICENSED",
+  "keywords": [
+    "nodebb",
+    "plugin",
+    "trust",
+    "reputation",
+    "badges"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "nbbpm": {
+    "compatibility": "^4.12.0"
+  }
+}

@@ -201,6 +201,49 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
   padding: 10px 18px; border-radius: 10px; opacity: 0; transition: .25s; pointer-events: none; z-index: 200; }
 .toast.show { opacity: 1; transform: translateX(-50%); }
 
+/* ---------- Trust tiers ---------- */
+.tier { display: inline-flex; align-items: center; font-size: .72rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; color: #fff; white-space: nowrap; line-height: 1.6; }
+.tier[data-t="1"] { background: #64748b; }
+.tier[data-t="2"] { background: #2563eb; }
+.tier[data-t="3"] { background: #0e7490; }
+.tier[data-t="4"] { background: #7c3aed; }
+.tier[data-t="5"] { background: #b45309; }
+.demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--gold-soft);
+  border: 1px dashed color-mix(in srgb, var(--gold) 60%, transparent); border-radius: 12px; padding: 8px 14px; margin-bottom: 20px; font-size: .85rem; }
+.demo-bar select { padding: 4px 10px; font-size: .85rem; }
+.my-tier .ladder { display: flex; gap: 4px; margin: 10px 0 8px; }
+.my-tier .ladder span { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
+.my-tier .ladder span.on { background: var(--accent); }
+.my-tier .now { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.todo { margin: 8px 0 12px; }
+.todo li { list-style: none; font-size: .85rem; padding: 4px 0; }
+.todo .row { display: flex; justify-content: space-between; gap: 8px; }
+.todo li.done { color: var(--ok); }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 3px; }
+.meter > i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--accent)); }
+.link-btn { background: none; border: 0; color: var(--accent); font-weight: 700; font-size: .9rem; padding: 0; }
+.gate-note { display: flex; gap: 10px; align-items: flex-start; border-radius: 12px; padding: 12px 14px; font-size: .88rem; margin-bottom: 16px;
+  background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+.gate-note.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 30%, transparent); }
+.gate-note.wait { background: var(--gold-soft); border-color: color-mix(in srgb, var(--gold) 40%, transparent); }
+.btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.ladder-list { display: grid; gap: 10px; }
+.ladder-list .rung { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.ladder-list .rung.current { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.ladder-list small { color: var(--muted); display: block; }
+.results { padding: 18px; margin: 0 0 28px; }
+.results-table { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 10px; }
+.results-table th { font-size: .75rem; color: var(--muted); font-weight: 700; text-align: start; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.results-table td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.results-table tr:last-child td { border-bottom: 0; }
+.results-table .final { font-family: var(--serif); font-weight: 900; font-size: 1.15rem; color: var(--ink); }
+.split { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--line); min-width: 90px; }
+.split .j { background: var(--ink); }
+.split .p { background: var(--gold); }
+.legend { display: flex; gap: 14px; font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-inline-end: 4px; vertical-align: -1px; }
+.table-wrap { overflow-x: auto; }
+
 /* ---------- Mobile tab bar ---------- */
 .tabbar { display: none; }
 @media (max-width: 980px) {
@@ -249,6 +292,17 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
 
 <main class="page">
 
+  <div class="demo-bar" role="region" aria-label="מצב הדגמה">
+    <span>🧪 אב-טיפוס: צפו באתר כחבר בדרגה</span>
+    <select id="demoTier" aria-label="דרגה להדגמה">
+      <option value="1">1 · נקודה (חבר חדש)</option>
+      <option value="2">2 · אות</option>
+      <option value="3">3 · שורה</option>
+      <option value="4">4 · עמוד</option>
+      <option value="5">5 · ספר</option>
+    </select>
+  </div>
+
   <!-- =============== FORUM =============== -->
   <section class="view" id="view-forum">
     <div class="hero">
@@ -282,6 +336,7 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
       </div>
 
       <aside class="side">
+        <div class="card my-tier" id="myTier" aria-live="polite"></div>
         <div class="card contest-mini">
           <h3>🏆 תחרות פעילה</h3>
           <strong>צורת הדף 5787</strong>
@@ -297,9 +352,9 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
         <div class="card">
           <h3>⭐ עונים מובילים החודש</h3>
           <ul class="mini-list">
-            <li>יהודה_ברקן <span class="pill gold">מגיה מוסמך</span><small>42 תשובות שסומנו כפתרון</small></li>
-            <li>מנחם_גראס <span class="pill">אידיש</span><small>31 תשובות</small></li>
-            <li>Rivka_D <span class="pill green">זוכת תחרות</span><small>27 תשובות</small></li>
+            <li>יהודה_ברקן <span class="tier" data-t="5">ספר</span> <span class="pill gold">מגיה מוסמך</span><small>42 תשובות שסומנו כפתרון</small></li>
+            <li>מנחם_גראס <span class="tier" data-t="4">עמוד</span><small>31 תשובות</small></li>
+            <li>Rivka_D <span class="tier" data-t="4">עמוד</span> <span class="pill green">זוכת תחרות</span><small>27 תשובות</small></li>
           </ul>
         </div>
       </aside>
@@ -343,6 +398,16 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
 
     <div class="blind-note">🔒 <div><b>הגשה עיוורת:</b> העבודות גלויות רק לכם ולשופטים עד סיום ההגשות. השופטים רואים "הגשה #7" ולא את שמכם. לאחר המועד כל העבודות מתפרסמות לדיון והצבעה.</div></div>
 
+    <article class="card results" aria-labelledby="resultsTitle">
+      <h2 id="resultsTitle" style="font-size:1.3rem">תוצאות: כריכת ספר "פירוש על התורה"</h2>
+      <p style="color:var(--muted);font-size:.9rem;margin:4px 0 10px">
+        70% שופטים · 30% הצבעת קהל. כל חלק מומר קודם לסולם 0–100 (המוביל מקבל 100, האחרון 0) ורק אז משוקלל,
+        כדי שהקהל לא יגבר על השופטים. שלום_ע קיבל הכי הרבה קולות, אבל יתרון השופטים של Rivka_D הכריע.
+      </p>
+      <div class="legend"><span><i style="background:var(--ink)"></i>חלק השופטים (עד 70)</span><span><i style="background:var(--gold)"></i>חלק הקהל (עד 30)</span></div>
+      <div class="table-wrap"><table class="results-table" id="resultsTable"></table></div>
+    </article>
+
     <div class="section-head"><h2 style="font-size:1.3rem">תחרויות נוספות</h2></div>
     <div class="contest-grid" id="contestGrid"></div>
   </section>
@@ -351,8 +416,9 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
   <section class="view" id="view-jobs">
     <div class="section-head">
       <div><h2>לוח משרות</h2><p>עבודות עימוד, עיצוב, הגהה, ניקוד ותרגום — ופרילנסרים זמינים.</p></div>
-      <button class="btn btn-primary" data-open="jobModal">+ פרסום משרה</button>
+      <button class="btn btn-primary" id="postJobBtn">+ פרסום משרה</button>
     </div>
+    <div id="jobGate"></div>
     <div class="jobs-layout">
       <aside class="card filters" aria-label="סינון">
         <h4>שפה</h4><div class="chips" data-filter="lang"></div>
@@ -414,8 +480,9 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
       </div>
       <label>תיאור<textarea rows="4" placeholder="היקף, תוכנה נדרשת, האם נדרשת עבודה לדוגמה…"></textarea></label>
       <label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" checked> פניות יגיעו אליי בצ'אט פרטי</label>
+      <div class="gate-note wait" id="jobModalNote" style="margin:0"></div>
     </div>
-    <div class="modal-foot"><button class="btn btn-ghost" value="cancel">ביטול</button><button class="btn btn-primary" value="ok" data-toast="המשרה נשלחה לאישור מנהל ✓">פרסום</button></div>
+    <div class="modal-foot"><button class="btn btn-ghost" value="cancel">ביטול</button><button class="btn btn-primary" value="ok" id="jobSubmit" data-toast="המשרה נשלחה לאישור מנהל ✓">פרסום</button></div>
   </form>
 </dialog>
 
@@ -443,6 +510,16 @@ input, select, textarea { font: inherit; border: 1px solid var(--line); border-r
       <label>תגיות<input placeholder="ניקוד, indesign, כתב-רש&quot;י"></label>
     </div>
     <div class="modal-foot"><button class="btn btn-ghost" value="cancel">ביטול</button><button class="btn btn-primary" value="ok" data-toast="הנושא פורסם ✓">פרסום</button></div>
+  </form>
+</dialog>
+
+<dialog id="tiersModal" aria-labelledby="tiersTitle">
+  <form method="dialog">
+    <div class="modal-head"><h3 id="tiersTitle">סולם הדרגות · מנקודה לספר</h3><button class="icon-btn" value="cancel" aria-label="סגירה">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:.9rem;color:var(--muted)">הדרגה עולה לבד: לפי הודעות, מוניטין (הצבעות חיוביות) וותק. כל דרגה כוללת את דרישות הדרגות שלפניה.</p>
+      <div class="ladder-list" id="ladderList"></div>
+    </div>
   </form>
 </dialog>
 
@@ -489,6 +566,34 @@ const CONTESTS = [
   { title:'"תקנו את העימוד הגרוע"', lang:'כל השפות', status:'פתוח', color:'#0e7490', glyph:'✎', entries:28, left:'עוד 5 ימים' }
 ];
 
+// Trust tiers: the same defaults as plugins/nodebb-plugin-trust-tiers
+const TIERS = [
+  { t: 1, name: 'נקודה', en: 'Dot', posts: 0, rep: 0, days: 0, perks: 'כתיבה בפורום והשתתפות בתחרויות' },
+  { t: 2, name: 'אות', en: 'Letter', posts: 5, rep: 0, days: 0, email: true, perks: 'פרסום משרות (באישור מנהל), העלאת קבצי PDF, הצבעה בתחרויות' },
+  { t: 3, name: 'שורה', en: 'Line', posts: 30, rep: 15, days: 14, perks: 'משרות מתפרסמות מיד, חתימה עם קישורים' },
+  { t: 4, name: 'עמוד', en: 'Page', posts: 100, rep: 60, days: 60, perks: 'חדר המקצוענים, מועמדות לשיפוט תחרויות' },
+  { t: 5, name: 'ספר', en: 'Book', posts: 300, rep: 200, days: 180, perks: 'מועמדות למנחה או מנטור, מודעת "זמין לעבודה" מקודמת' }
+];
+// What the demo member has done at each tier (switch with the demo bar)
+const DEMO = {
+  1: { posts: 2, rep: 0, days: 1, email: false },
+  2: { posts: 12, rep: 6, days: 9, email: true },
+  3: { posts: 58, rep: 31, days: 40, email: true },
+  4: { posts: 140, rep: 95, days: 120, email: true },
+  5: { posts: 410, rep: 260, days: 400, email: true }
+};
+const MEMBER_TIERS = {
+  'יהודה_ברקן': 5, 'שלום_ע': 5, 'מנחם_גראס': 4, 'Rivka_D': 4, 'הוצאת "אור"': 4, 'דניאל_ל': 3, 'David_R': 3, 'חיה_ר': 3,
+  'עלון "די שטימע"': 3, 'הוצאת "פאר"': 3, 'אברהם_פ': 2, 'אליעזר_ק': 2, 'Yitzchak_S': 2, 'משה_ש': 2, 'Lev Publishing': 2, 'רחל_מ': 1
+};
+// A finished contest, scored like plugins/nodebb-plugin-contests/lib/scoring.js
+const RESULTS = [
+  { who: 'Rivka_D', judge: 90, votes: 48 },
+  { who: 'שלום_ע', judge: 84, votes: 63 },
+  { who: 'מנחם_גראס', judge: 79, votes: 22 },
+  { who: 'חיה_ר', judge: 71.5, votes: 30 }
+];
+
 const FONTS = [
   ['Frank Ruhl Libre', '"Frank Ruhl Libre", serif'],
   ['Heebo', 'Heebo, sans-serif'],
@@ -502,6 +607,10 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const colorFor = s => COLORS[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % COLORS.length];
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+const tierBadge = t => `<span class="tier" data-t="${t}" title="דרגה ${t} מתוך 5 · ${TIERS[t - 1].en}">${TIERS[t - 1].name}</span>`;
+const memberBadge = name => (MEMBER_TIERS[name] ? ' ' + tierBadge(MEMBER_TIERS[name]) : '');
+let myTier = 1;
+try { myTier = Number(localStorage.getItem('demoTier')) || 1; } catch (e) {}
 
 // --- worlds & topics ---
 let currentWorld = null, currentSort = 'recent';
@@ -527,7 +636,7 @@ function renderTopics() {
       <div style="min-width:0">
         <a href="#forum" class="topic-title" dir="auto">${esc(t.title)}</a>
         <div class="topic-meta"><span class="pill">${esc(wn)}</span>${t.tags.map(g => `<span>#${esc(g)}</span>`).join('')}
-          <span>· <b>${esc(t.author)}</b> · ${esc(t.time)}</span>${t.solved ? '<span class="solved">✓ נפתר</span>' : ''}</div>
+          <span>· <b>${esc(t.author)}</b>${memberBadge(t.author)} · ${esc(t.time)}</span>${t.solved ? '<span class="solved">✓ נפתר</span>' : ''}</div>
       </div>
       <div class="topic-stats"><b>${t.replies}</b>תגובות</div>
     </div>`; }).join('') : '<div class="empty">אין כאן אשכולות כרגע 🎉</div>';
@@ -553,7 +662,7 @@ function renderJobs() {
         <h3 dir="auto">${esc(j.title)}</h3>
         <div class="meta"><span class="pill red">${esc(j.lang)}</span><span class="pill">${esc(j.role)}</span><span class="pill">${esc(j.type)}</span></div>
         <p dir="auto">${esc(j.desc)}</p>
-        <p style="margin-top:6px;font-size:.8rem">${esc(j.who)} · ${esc(j.when)}</p>
+        <p style="margin-top:6px;font-size:.8rem">${esc(j.who)}${memberBadge(j.who)} · ${esc(j.when)}</p>
       </div>
       <div class="side-col">
         <div class="pay">${esc(j.pay)}</div>
@@ -574,9 +683,102 @@ $('#contestGrid').innerHTML = CONTESTS.map(c => `
     <div class="body">
       <div><span class="pill ${statusPill[c.status]}">${esc(c.status)}</span> <span class="pill">${esc(c.lang)}</span></div>
       <h3 style="font-size:1.1rem">${esc(c.title)}</h3>
+      ${c.status === 'הצבעת קהל' ? '<button class="btn btn-ghost" data-vote>👍 הצבעה לעבודות</button>' : ''}
       <div class="foot"><span>${c.entries} הגשות</span><span>${esc(c.left)}</span></div>
     </div>
   </article>`).join('');
+$$('[data-vote]').forEach(b => b.onclick = () => toast(myTier >= 2
+  ? 'אפשר להצביע לעד 3 עבודות (לא לעבודה שלך) 👍'
+  : 'הצבעת הקהל פתוחה מדרגת אות: 5 הודעות ומייל מאומת'));
+
+// 70/30: in each part the best entry gets 100 points and the weakest 0, then 70% judges + 30% public
+function toPoints(values) {
+  const max = Math.max(...values), min = Math.min(...values);
+  return values.map(v => (max === min ? (max > 0 ? 100 : 0) : (v - min) / (max - min) * 100));
+}
+function renderResults() {
+  const jp = toPoints(RESULTS.map(r => r.judge)), pp = toPoints(RESULTS.map(r => r.votes));
+  const rows = RESULTS.map((r, i) => ({ ...r, j: 0.7 * jp[i], p: 0.3 * pp[i] }))
+    .map(r => ({ ...r, total: r.j + r.p }))
+    .sort((a, b) => b.total - a.total || b.judge - a.judge);
+  const f = n => n.toFixed(1);
+  $('#resultsTable').innerHTML = '<thead><tr><th>#</th><th>מגיש/ה</th><th>ממוצע שופטים</th><th>קולות</th><th>שופטים + קהל</th><th>ציון</th></tr></thead><tbody>' +
+    rows.map((r, i) => `<tr>
+      <td>${i === 0 ? '🏆' : i + 1}</td>
+      <td><b>${esc(r.who)}</b>${memberBadge(r.who)}</td>
+      <td>${f(r.judge)}</td>
+      <td>${r.votes}</td>
+      <td><div class="split" role="img" aria-label="שופטים ${f(r.j)}, קהל ${f(r.p)}"><span class="j" style="width:${r.j}%"></span><span class="p" style="width:${r.p}%"></span></div>
+        <small style="color:var(--muted)">${f(r.j)} + ${f(r.p)}</small></td>
+      <td class="final">${f(r.total)}</td>
+    </tr>`).join('') + '</tbody>';
+}
+
+// --- trust tiers (demo member) ---
+function renderMyTier() {
+  const me = DEMO[myTier], next = TIERS[myTier];
+  let detail;
+  if (!next) {
+    detail = '<p style="font-size:.85rem;color:var(--muted);margin:6px 0 10px">הגעת לראש הסולם 📖</p>';
+  } else {
+    const items = [['הודעות או תשובות', me.posts, next.posts], ['מוניטין', me.rep, next.rep], ['ימים באתר', me.days, next.days]]
+      .filter(([, , need]) => need > 0)
+      .map(([label, have, need]) => {
+        const done = have >= need;
+        return `<li class="${done ? 'done' : ''}"><div class="row"><span>${done ? '✓' : '○'} ${label}</span><span>${Math.min(have, need)}/${need}</span></div>
+          <div class="meter"><i style="width:${Math.min(100, Math.round(have / need * 100))}%"></i></div></li>`;
+      });
+    if (next.email) items.push(`<li class="${me.email ? 'done' : ''}"><div class="row"><span>${me.email ? '✓' : '○'} אימות כתובת המייל</span></div></li>`);
+    detail = `<div style="font-size:.85rem">לדרגת ${tierBadge(next.t)} חסר לך:</div><ul class="todo">${items.join('')}</ul>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px">ייפתח לך: ${esc(next.perks)}</p>`;
+  }
+  $('#myTier').innerHTML = `<h3>🏷️ הדרגה שלך</h3>
+    <div class="now">${tierBadge(myTier)}<span>דרגה ${myTier} מתוך 5</span></div>
+    <div class="ladder" aria-hidden="true">${TIERS.map(t => `<span class="${t.t <= myTier ? 'on' : ''}"></span>`).join('')}</div>
+    ${detail}<button class="link-btn" data-open-tiers>סולם הדרגות המלא ←</button>`;
+}
+function renderJobGate() {
+  const btn = $('#postJobBtn'), gate = $('#jobGate');
+  if (myTier < 2) {
+    const me = DEMO[myTier], missing = [];
+    if (me.posts < TIERS[1].posts) missing.push(`עוד ${TIERS[1].posts - me.posts} הודעות בפורום`);
+    if (!me.email) missing.push('אימות כתובת המייל');
+    btn.setAttribute('aria-disabled', 'true');
+    btn.textContent = '🔒 פרסום משרה';
+    gate.innerHTML = `<div class="gate-note">🔒 <div><b>פרסום משרות נפתח מדרגת ${tierBadge(2)}</b>: 5 הודעות או תשובות בפורום ומייל מאומת.
+      חסר לך: ${missing.join(' ו')}. <button class="link-btn" data-open-tiers>איך עולים בדרגה?</button></div></div>`;
+  } else {
+    btn.removeAttribute('aria-disabled');
+    btn.textContent = '+ פרסום משרה';
+    gate.innerHTML = myTier === 2
+      ? `<div class="gate-note wait">⏳ <div>בדרגת ${tierBadge(2)} מודעות עוברות אישור מנהל לפני הפרסום. מדרגת ${tierBadge(3)} הן מתפרסמות מיד.</div></div>`
+      : `<div class="gate-note ok">✓ <div>בדרגת ${tierBadge(myTier)} המודעות שלך מתפרסמות מיד.</div></div>`;
+  }
+  const note = $('#jobModalNote');
+  note.className = 'gate-note ' + (myTier === 2 ? 'wait' : 'ok');
+  note.textContent = myTier === 2 ? '⏳ המודעה תפורסם אחרי אישור מנהל.' : '✓ המודעה תתפרסם מיד.';
+  $('#jobSubmit').dataset.toast = myTier === 2 ? 'המשרה נשלחה לאישור מנהל ✓' : 'המשרה פורסמה ✓';
+}
+function renderLadder() {
+  $('#ladderList').innerHTML = TIERS.map(t => {
+    const needs = t.t === 1 ? 'כל חבר רשום'
+      : [`${t.posts} הודעות`, t.rep ? `מוניטין ${t.rep}` : '', t.days ? `${t.days} ימים באתר` : '', t.email ? 'מייל מאומת' : ''].filter(Boolean).join(' · ');
+    return `<div class="rung ${t.t === myTier ? 'current' : ''}">
+      <div>${tierBadge(t.t)}<small>${t.t} מתוך 5</small></div>
+      <div><b>${needs}</b><small>${esc(t.perks)}</small>${t.t === myTier ? '<small style="color:var(--accent);font-weight:700">← הדרגה שלך</small>' : ''}</div>
+    </div>`;
+  }).join('');
+}
+function renderTierUI() { renderMyTier(); renderJobGate(); renderLadder(); }
+$('#postJobBtn').onclick = () => (myTier < 2 ? $('#tiersModal').showModal() : $('#jobModal').showModal());
+document.addEventListener('click', (e) => { if (e.target.closest('[data-open-tiers]')) $('#tiersModal').showModal(); });
+$('#demoTier').value = String(myTier);
+$('#demoTier').onchange = (e) => {
+  myTier = Number(e.target.value);
+  try { localStorage.setItem('demoTier', String(myTier)); } catch (err) {}
+  renderTierUI();
+  toast(`צופים באתר כחבר בדרגת ${TIERS[myTier - 1].name}`);
+};
 
 const deadline = Date.now() + ((9 * 24 + 14) * 60 + 32) * 60 * 1000;
 function tick() {
@@ -616,7 +818,7 @@ function setTheme(t) { document.documentElement.dataset.theme = t; $('#themeBtn'
 setTheme(theme || (prefersDark ? 'dark' : 'light'));
 $('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 
-renderWorlds(); renderTopics(); renderFilterChips(); renderJobs(); renderFonts(); route();
+renderWorlds(); renderTopics(); renderFilterChips(); renderJobs(); renderFonts(); renderResults(); renderTierUI(); route();
 </script>
 </body>
 </html>
