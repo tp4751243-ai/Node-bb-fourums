@@ -3,17 +3,30 @@
 A private copy of the real forum for testing and tweaking. It starts **clean**: no NodeBB sample categories,
 no welcome post, no test users. You get only your own category tree, the trust tiers and your admin account.
 
-## Start
+## Start on Windows
 
-1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) (on Linux, Docker Engine is enough).
-2. In a terminal (on Windows use WSL or Git Bash):
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), open it, and wait until it shows
+   *Engine running*. (The first time, it may ask to install WSL and restart Windows.)
+2. Download the project. While logged in to GitHub, open
+   <https://github.com/tp4751243-ai/Node-bb-fourums/archive/refs/heads/ccr-cb5c03ed-aduxo6.zip>.
+   Right-click the ZIP → *Extract All…* → extract to `C:\Users\<you>\beit-haorchim`.
+3. Open PowerShell and run (adjust the path if you extracted elsewhere):
 
-   ```bash
-   cd local
-   ./setup.sh
+   ```powershell
+   cd C:\Users\<you>\beit-haorchim\Node-bb-fourums-ccr-cb5c03ed-aduxo6\local
+   powershell -ExecutionPolicy Bypass -File .\setup.ps1
    ```
 
    The first run takes a few minutes. At the end it prints your admin login.
+
+## Start on Mac or Linux
+
+Install Docker, get the project (`git clone`), then:
+
+```bash
+cd local
+./setup.sh
+```
 
 | What | Where |
 |---|---|
@@ -31,9 +44,9 @@ Nothing is reachable from outside your computer, and no email leaves it.
 | Stop the forum (data is kept) | `docker compose stop` |
 | Start it again | `docker compose start` |
 | Apply changes to the trust-tiers plugin | `docker compose restart nodebb` (takes about a minute, because it rebuilds) |
-| Re-apply categories and permissions after editing `scripts/bootstrap.mjs` | `./setup.sh` |
+| Re-apply categories and permissions after editing `scripts/bootstrap.mjs` | run the setup script again |
 | Watch the forum's log | `docker compose logs -f nodebb` |
-| **Wipe everything and start from zero** | `docker compose down -v && ./setup.sh` |
+| **Wipe everything and start from zero** | `docker compose down -v`, then run the setup script again |
 
 ## Testing the trust tiers
 

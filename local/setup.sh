@@ -47,11 +47,7 @@ if ! curl -sf -o /dev/null "$URL/api/v3/plugins/trust-tiers"; then
 fi
 
 echo 'Creating categories and permissions...'
-dc run --rm tools sh -c '
-	export NODEBB_URL=http://localhost:4567
-	NODEBB_TOKEN=$(node scripts/make-token.mjs) || exit 1
-	NODEBB_TOKEN=$NODEBB_TOKEN REMOVE_NODEBB_SAMPLES=1 SMTP_HOST=mail SMTP_PORT=1025 DELETE_TOKEN=1 node scripts/bootstrap.mjs
-'
+dc run --rm tools sh scripts/local-bootstrap.sh
 
 admin_user=$(grep '^NODEBB_ADMIN_USERNAME=' .env | cut -d= -f2-)
 admin_pass=$(grep '^NODEBB_ADMIN_PASSWORD=' .env | cut -d= -f2-)
