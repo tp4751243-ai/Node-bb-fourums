@@ -1,0 +1,9 @@
+# Automatic HTTPS. Forum at https://DOMAIN, test inbox at https://mail.DOMAIN
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy nodebb:4567
+}
+
+mail.{$DOMAIN} {
+	reverse_proxy mail:8025
+}

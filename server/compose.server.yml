@@ -1,0 +1,28 @@
+# Added on top of local/docker-compose.yml when the test forum runs on a server (see server/README.md).
+# Caddy gives it a real https address; the test inbox gets a password.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ../server/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - nodebb
+      - mail
+
+  mail:
+    environment:
+      # the test inbox is on the internet now, so it needs the admin login
+      MP_UI_AUTH: ${NODEBB_ADMIN_USERNAME}:${NODEBB_ADMIN_PASSWORD}
+
+volumes:
+  caddy-data:
+  caddy-config:

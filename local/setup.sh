@@ -33,6 +33,9 @@ dc up -d db mail
 if ! dc run --rm --no-deps --entrypoint test nodebb -f /opt/config/config.json; then
 	echo 'First run: creating the forum database and admin account...'
 	dc run --rm -e SETUP=1 nodebb
+	# A brand-new install is already current: record that, so the first start doesn't run NodeBB's
+	# upgrade step (which needs packages.nodebb.org and crash-loops if that site can't be reached).
+	dc run --rm --no-deps --entrypoint sh nodebb -c 'md5sum install/package.json | head -c 32 > /opt/config/install_hash.md5'
 fi
 
 dc up -d nodebb

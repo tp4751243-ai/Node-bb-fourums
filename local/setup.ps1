@@ -58,6 +58,8 @@ Invoke-Compose up -d db mail
 if ($LASTEXITCODE -ne 0) {
 	Write-Host 'First run: creating the forum database and admin account...'
 	Invoke-Compose run --rm -e SETUP=1 nodebb
+	# A brand-new install is already current: record that, so the first start skips NodeBB's online upgrade check.
+	Invoke-Compose run --rm --no-deps --entrypoint sh nodebb -c 'md5sum install/package.json | head -c 32 > /opt/config/install_hash.md5'
 }
 
 Invoke-Compose up -d nodebb
