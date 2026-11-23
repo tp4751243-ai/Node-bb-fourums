@@ -3,11 +3,11 @@
 //
 //   NODEBB_URL=http://localhost:4567 NODEBB_TOKEN=<master token> node scenario.mjs
 //
-// Needs: the plugin active, scripts/bootstrap.mjs already run, and a master token (make-token.mjs).
+// Needs: the plugin active, scripts/bootstrap.mjs already run, and a master token (scripts/make-token.mjs).
 const BASE = process.env.NODEBB_URL || 'http://localhost:4567';
 const TOKEN = process.env.NODEBB_TOKEN;
 if (!TOKEN) {
-	console.error('Set NODEBB_TOKEN to a master API token (see make-token.mjs).');
+	console.error('Set NODEBB_TOKEN to a master API token (see scripts/make-token.mjs).');
 	process.exit(1);
 }
 const ADMIN = 1;

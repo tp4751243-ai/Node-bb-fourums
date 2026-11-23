@@ -67,8 +67,8 @@ Open `https://your-domain` and log in as the admin.
    ```
 
 5. Delete the token afterwards (ACP → Settings → API Access).
-6. NodeBB's sample categories (Announcements, General Discussion, …) are left alone. Disable or delete them in
-   ACP → Manage → Categories.
+6. To also remove NodeBB's sample categories and welcome post, add `REMOVE_NODEBB_SAMPLES=1` to the bootstrap
+   command. It only removes them while they hold nothing but the welcome post.
 
 ## Day to day
 

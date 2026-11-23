@@ -203,6 +203,7 @@ Full walkthrough: [`docker/README.md`](docker/README.md).
 - **Backups:** Supabase daily backups (Pro plan), plus the uploads volume (or S3 uploads).
 - **Repository layout:**
   ```
+  local/                          one-command local test forum (setup.sh)
   docker/                         compose file, Caddy, Supabase SQL, deploy guide
   plugins/nodebb-plugin-trust-tiers   the 5-tier ladder (done)
   plugins/nodebb-plugin-contests      scoring engine (done), plugin (phase 2)

@@ -15,11 +15,18 @@
  *
  * Create the token in ACP > Settings > API Access. With a master token (uid 0) also set NODEBB_UID
  * to an administrator's uid (default 1). Safe to run again: existing categories are matched by name.
+ *
+ * Optional switches (local/setup.sh uses all three):
+ *   REMOVE_NODEBB_SAMPLES=1   delete NodeBB's sample categories and welcome post (only while they hold
+ *                             no more than the welcome post, so real content is never removed)
+ *   SMTP_HOST=mail SMTP_PORT=1025   send email through this server without TLS (local test inbox)
+ *   DELETE_TOKEN=1            delete NODEBB_TOKEN when finished
  */
 
 const BASE = String(process.env.NODEBB_URL || '').replace(/\/+$/, '');
 const TOKEN = process.env.NODEBB_TOKEN;
 const UID = process.env.NODEBB_UID || '1';
+const SAMPLE_CATEGORIES = ['Announcements', 'General Discussion', 'Comments & Feedback', 'Blogs'];
 
 if (!BASE || !TOKEN) {
 	console.error('Set NODEBB_URL and NODEBB_TOKEN (ACP > Settings > API Access). See the header of this file.');
@@ -141,6 +148,8 @@ const GLOBAL = {
 };
 
 const SETTINGS = {
+	title: 'בית העורכים', // replaces the default "NodeBB" in the header and browser tab
+	defaultLang: 'he', // Hebrew interface, right-to-left layout
 	activitypubEnabled: 0, // no federation: the community stays on this site
 	// Only a member's very first post (and posts with links by brand-new members) waits for approval.
 	// NodeBB's default (1) would hold every post until someone upvotes the author.
@@ -234,9 +243,35 @@ async function main() {
 		await call('PUT', `/admin/settings/${key}`, { value });
 		console.log(`  ${key} = ${value}`);
 	}
+	if (process.env.SMTP_HOST) {
+		const smtp = {
+			'email:smtpTransport:enabled': 1,
+			'email:smtpTransport:service': 'nodebb-custom-smtp',
+			'email:smtpTransport:host': process.env.SMTP_HOST,
+			'email:smtpTransport:port': Number(process.env.SMTP_PORT || 1025),
+			'email:smtpTransport:security': 'NONE',
+		};
+		for (const [key, value] of Object.entries(smtp)) {
+			await call('PUT', `/admin/settings/${key}`, { value });
+		}
+		console.log(`  email via ${process.env.SMTP_HOST}:${smtp['email:smtpTransport:port']} (no TLS, for a local test inbox)`);
+	}
+
+	let { categories: existing } = await call('GET', '/categories');
+	if (process.env.REMOVE_NODEBB_SAMPLES === '1') {
+		console.log('NodeBB sample content');
+		for (const c of existing.filter(x => Number(x.parentCid) === 0 && SAMPLE_CATEGORIES.includes(x.name))) {
+			if (Number(c.topic_count) > 1) {
+				console.log(`  kept ${c.name}: it has ${c.topic_count} topics`);
+			} else {
+				await call('DELETE', `/categories/${c.cid}`);
+				console.log(`  - ${c.name} (cid ${c.cid})`);
+			}
+		}
+		({ categories: existing } = await call('GET', '/categories'));
+	}
 
 	console.log('Categories');
-	const { categories: existing } = await call('GET', '/categories');
 	const jobsCids = [];
 	let order = 1;
 	for (const spec of CATEGORIES) {
@@ -264,7 +299,11 @@ async function main() {
 		!CATEGORIES.some(spec => spec.name === c.name));
 	if (leftovers.length) {
 		console.log(`\nNodeBB's sample categories are still there: ${leftovers.map(c => `${c.name} (cid ${c.cid})`).join(', ')}.`);
-		console.log('Disable or delete them in ACP > Manage > Categories if you do not want them.');
+		console.log('Disable or delete them in ACP > Manage > Categories, or run again with REMOVE_NODEBB_SAMPLES=1.');
+	}
+	if (process.env.DELETE_TOKEN === '1') {
+		await call('DELETE', `/admin/tokens/${encodeURIComponent(TOKEN)}`);
+		console.log('\nTemporary API token deleted.');
 	}
 	console.log('\nDone.');
 }
