@@ -1,0 +1,17 @@
+{
+	"name": "Beit HaOrchim test forum",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	},
+	"hostRequirements": {
+		"cpus": 2,
+		"memory": "8gb"
+	},
+	"forwardPorts": [4567, 8025],
+	"portsAttributes": {
+		"4567": { "label": "Forum", "onAutoForward": "notify" },
+		"8025": { "label": "Test inbox", "onAutoForward": "silent" }
+	},
+	"postStartCommand": "bash .devcontainer/start.sh"
+}

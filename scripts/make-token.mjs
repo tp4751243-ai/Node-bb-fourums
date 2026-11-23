@@ -16,7 +16,10 @@ async function req(method, path, body, headers = {}) {
 	const res = await fetch(BASE + path, {
 		method,
 		redirect: 'manual',
-		headers: { cookie: cookie(), 'content-type': 'application/json', ...headers },
+		headers: {
+			cookie: cookie(), 'content-type': 'application/json', ...headers,
+			...(process.env.FORWARDED_PROTO ? { 'x-forwarded-proto': process.env.FORWARDED_PROTO } : {}),
+		},
 		body: body ? JSON.stringify(body) : undefined,
 	});
 	for (const c of res.headers.getSetCookie()) {

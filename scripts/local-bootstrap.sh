@@ -2,6 +2,8 @@
 # Runs inside the "tools" container of local/docker-compose.yml (called by local/setup.sh and setup.ps1).
 # Logs in as the admin from local/.env, makes a temporary token, applies the forum structure, deletes the token.
 set -e
+# Behind an https address, NodeBB only issues login cookies to https requests: say we are one.
+case "${NODEBB_PUBLIC_URL:-}" in https://*) export FORWARDED_PROTO=https ;; esac
 export NODEBB_URL=http://localhost:4567
 NODEBB_TOKEN=$(node scripts/make-token.mjs)
 export NODEBB_TOKEN

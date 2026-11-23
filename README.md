@@ -4,7 +4,7 @@ A NodeBB community for Hebrew, Yiddish, Lashon HaKodesh and English typesetters,
 
 | What | Where |
 |---|---|
-| **Run it on your own computer** (clean local forum for testing and tweaking) | [local/README.md](local/README.md) |
+| **Test forum** in GitHub Codespaces or on your own computer | [local/README.md](local/README.md) |
 | The plan: features, decisions, roadmap | [PLAN.md](PLAN.md) |
 | Clickable UI prototype (open in a browser; switch tiers in the demo bar) | [mockup/index.html](mockup/index.html) |
 | Deploying on a server with Supabase Postgres | [docker/README.md](docker/README.md) |

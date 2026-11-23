@@ -36,7 +36,11 @@ services:
         condition: service_started
     env_file: .env
     environment:
-      NODEBB_URL: http://localhost:4567
+      # The address people open. Codespaces sets this to its https address (see .devcontainer/start.sh).
+      NODEBB_URL: ${NODEBB_URL:-http://localhost:4567}
+      url: ${NODEBB_URL:-http://localhost:4567}
+      # Trust the proxy in front (Codespaces) so https logins work; only local/private addresses are trusted.
+      trust_proxy: loopback,uniquelocal
       NODEBB_PORT: "4567"
       NODEBB_DB: postgres
       NODEBB_DB_HOST: db
@@ -61,6 +65,8 @@ services:
     profiles: ["tools"]
     network_mode: "service:nodebb"
     env_file: .env
+    environment:
+      NODEBB_PUBLIC_URL: ${NODEBB_URL:-http://localhost:4567}
     working_dir: /repo
     volumes:
       - ../:/repo:ro

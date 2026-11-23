@@ -54,7 +54,7 @@ admin_pass=$(grep '^NODEBB_ADMIN_PASSWORD=' .env | cut -d= -f2-)
 cat <<EOF
 
 Your local forum is ready.
-  Forum:       http://localhost:4567
+  Forum:       ${NODEBB_URL:-http://localhost:4567}
   Admin login: $admin_user / $admin_pass   (stored in local/.env)
-  Test inbox:  http://localhost:8025       (every email the forum sends lands here)
+  Test inbox:  port 8025                    (every email the forum sends lands here)
 EOF
