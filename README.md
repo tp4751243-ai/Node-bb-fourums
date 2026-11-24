@@ -4,7 +4,7 @@ A NodeBB community for Hebrew, Yiddish, Lashon HaKodesh and English typesetters,
 
 | What | Where |
 |---|---|
-| **Test forum on a Hetzner server** (about €4/month, installs itself) | [server/README.md](server/README.md) |
+| **Test forum on a server**: [Oracle Cloud, free](server/ORACLE.md) or [Hetzner](server/README.md) | installs itself |
 | Test forum in GitHub Codespaces or on your own computer | [local/README.md](local/README.md) |
 | The plan: features, decisions, roadmap | [PLAN.md](PLAN.md) |
 | Clickable UI prototype (open in a browser; switch tiers in the demo bar) | [mockup/index.html](mockup/index.html) |

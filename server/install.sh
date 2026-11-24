@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs the test forum on a fresh server (called by the Hetzner setup script in server/README.md).
+# Installs the test forum on a fresh server, Hetzner or Oracle Cloud (called by server/hetzner-setup.sh).
 #   bash server/install.sh <admin email> <admin password> [domain]
 # Without a domain it uses <server-ip>.sslip.io, a free name that points at this server.
 # Safe to run again: keeps the existing settings and data.
@@ -14,6 +14,15 @@ if [ "$(swapon --show --noheadings | wc -l)" -eq 0 ] && [ ! -f /swapfile ]; then
 	echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
+# Oracle Cloud's Ubuntu images block every incoming port except SSH in the server's own firewall.
+# Open the web ports (80, 443) once, and keep the change across reboots.
+if iptables -S INPUT 2>/dev/null | grep -q -- '-j REJECT' && ! iptables -C INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null; then
+	iptables -I INPUT 1 -p tcp --dport 80 -j ACCEPT
+	iptables -I INPUT 1 -p tcp --dport 443 -j ACCEPT
+	iptables -I INPUT 1 -p udp --dport 443 -j ACCEPT
+	if command -v netfilter-persistent >/dev/null 2>&1; then netfilter-persistent save; fi
+fi
+
 # Docker, if the server doesn't have it yet
 if ! command -v docker >/dev/null 2>&1; then
 	curl -fsSL https://get.docker.com | sh
@@ -22,7 +31,10 @@ fi
 if [ ! -f local/.env ]; then
 	domain=${3:-}
 	if [ -z "$domain" ]; then
-		ip=$(curl -sf --max-time 5 http://169.254.169.254/hetzner/v1/metadata/public-ipv4 || hostname -I | awk '{print $1}')
+		# Hetzner tells the server its address; on Oracle the server only knows a private one, so ask outside.
+		ip=$(curl -sf --max-time 5 http://169.254.169.254/hetzner/v1/metadata/public-ipv4 ||
+			curl -sf --max-time 10 https://api.ipify.org ||
+			hostname -I | awk '{print $1}')
 		domain="$(echo "$ip" | tr . -).sslip.io"
 	fi
 	db_password=$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')
