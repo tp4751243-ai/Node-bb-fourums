@@ -8,6 +8,17 @@ cd "$(dirname "$0")/.."
 ADMIN_EMAIL=${1:?admin email missing}
 ADMIN_PASSWORD=${2:?admin password missing}
 
+# Small servers: building the site needs more than 1 GB of memory, so add 2 GB of swap (backup memory on disk).
+if [ "$(swapon --show --noheadings | wc -l)" -eq 0 ] && [ ! -f /swapfile ]; then
+	fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+	echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
+# Docker, if the server doesn't have it yet
+if ! command -v docker >/dev/null 2>&1; then
+	curl -fsSL https://get.docker.com | sh
+fi
+
 if [ ! -f local/.env ]; then
 	domain=${3:-}
 	if [ -z "$domain" ]; then

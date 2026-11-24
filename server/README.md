@@ -23,7 +23,7 @@ The server has to download this repository. Create a read-only key for it:
 |---|---|
 | Location | Falkenstein, Nuremberg or Helsinki |
 | Image | **Ubuntu 24.04** |
-| Type | **Shared vCPU → x86 (Intel/AMD)**, the cheapest one with **4 GB RAM** (CX22 / CX23) |
+| Type | **x86 (Intel/AMD)**, the cheapest type with **at least 4 GB RAM** (not the 1 GB ones) |
 | Networking | keep **Public IPv4** switched on |
 | SSH keys | skip (Hetzner emails you a root password instead) |
 | **Cloud config** | paste all of [`hetzner-setup.sh`](hetzner-setup.sh), then fill in its three lines |
